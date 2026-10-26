@@ -31,7 +31,7 @@ export const monitorFocus: [number, number, number] = [
   -1.21 + deskLayout.offsetZ,
 ];
 export const cameraLimits = {
-  minDistance: 5.5,
+  minDistance: 2,
   maxDistance: 9.5,
   minAzimuth: -0.42,
   maxAzimuth: 0.65,
@@ -39,7 +39,7 @@ export const cameraLimits = {
   maxPolar: 1.56,
 };
 export const mobileCameraLimits = {
-  minDistance: 4.5,
+  minDistance: 2.2,
   maxDistance: 11,
   // A 109° forward-facing arc keeps the unfinished back wall out of view.
   minAzimuth: -0.95,

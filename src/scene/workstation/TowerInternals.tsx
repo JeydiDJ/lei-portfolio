@@ -1,4 +1,5 @@
-import { Box, Cylinder } from "../Objects";
+import GraphicsCard from "./GraphicsCard";
+import { Box } from "../Objects";
 import AioCooler from "./AioCooler";
 import TowerCables from "./TowerCables";
 import { towerPalette } from "./towerPalette";
@@ -29,62 +30,25 @@ export default function TowerInternals() {
               <Box
                 position={[0.116, 0.13, z]}
                 size={[0.025, 0.23, 0.012]}
-                color="#79877d"
+                color="#d4d8d1"
                 radius={0.003}
               />
-              <Box
-                position={[0.1, 0.248, z]}
-                size={[0.025, 0.008, 0.016]}
-                color="#b3bba8"
-                radius={0.002}
-              />
+              {/* Full-length diffused RGB bar on the outer spine of each DIMM. */}
+              <mesh position={[0.099, 0.13, z]}>
+                <boxGeometry args={[0.01, 0.232, 0.015]} />
+                <meshStandardMaterial
+                  color="#f3f4ef"
+                  emissive="#ffffff"
+                  emissiveIntensity={1.3}
+                  roughness={0.45}
+                  toneMapped={false}
+                />
+              </mesh>
             </>
           )}
         </group>
       ))}
-      {/* GPU plugs into the board and rear slots; cooler fans face downward. */}
-      <Box
-        position={[0.151, -0.08, -0.055]}
-        size={[0.025, 0.024, 0.5]}
-        color="#252a2d"
-        radius={0.002}
-      />
-      <Box
-        position={[-0.015, -0.08, -0.055]}
-        size={[0.3, 0.012, 0.55]}
-        color="#6f7974"
-        radius={0.002}
-      />
-      <Box
-        position={[-0.015, -0.12, -0.055]}
-        size={[0.31, 0.065, 0.55]}
-        color={towerPalette.panel}
-        radius={0.008}
-      />
-      <Box
-        position={[-0.177, -0.12, -0.055]}
-        size={[0.008, 0.053, 0.51]}
-        color={towerPalette.trim}
-        radius={0.002}
-      />
-      {[-0.19, 0.055].map((z) => (
-        <group
-          key={z}
-          position={[-0.015, -0.158, z]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <mesh>
-            <torusGeometry args={[0.083, 0.008, 8, 24]} />
-            <meshStandardMaterial color="#676f71" />
-          </mesh>
-          <Cylinder
-            position={[0, 0, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            args={[0.022, 0.022, 0.009]}
-            color="#40464c"
-          />
-        </group>
-      ))}
+      <GraphicsCard />
       {/* PSU remains below the shroud, with the cable bundle routed along the tray. */}
       <Box
         position={[0, -0.33, -0.04]}

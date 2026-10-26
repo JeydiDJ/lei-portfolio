@@ -3,6 +3,7 @@ export const unitsPerMetre = 2;
 // Presentation scale is tuned against the room's stylized furniture and props.
 export const workstationScale = { keyboard: 1.45, mouse: 1.5, tower: 1.3 };
 export const towerYaw = 0;
+export const gpuLift = 0.045;
 // Rear I/O location in desk coordinates, including the case's display angle.
 function towerPointToDesk(
   x: number,
@@ -19,7 +20,7 @@ function towerPointToDesk(
         (-x * Math.sin(towerYaw) + z * Math.cos(towerYaw)),
   ];
 }
-export const towerRearPort = towerPointToDesk(0.155, -0.085, -0.452);
+export const towerRearPort = towerPointToDesk(-0.015, -0.104 + gpuLift, -0.45);
 export const towerUsbPort = towerPointToDesk(0.136, -0.015, -0.452);
 const displayWidth = 2.1;
 export const monitorDimensions = {

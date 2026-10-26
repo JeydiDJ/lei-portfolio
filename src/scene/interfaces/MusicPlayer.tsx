@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { Box, Cylinder } from "../Objects";
 import SelectionOutline from "../SelectionOutline";
-import ScreenGlow from "../ScreenGlow";
 import GlassPane from "../GlassPane";
 import { rect, text } from "./drawing";
 import { brand, brandButton, brandMark, rule } from "./brandDrawing";
@@ -158,14 +157,6 @@ export default function MusicPlayer({
         <planeGeometry args={[0.388, 0.237]} />
         <meshBasicMaterial map={surface.texture} toneMapped={false} />
       </mesh>
-      <group position={[0, 0.16, 0.156]}>
-        <ScreenGlow
-          width={0.388}
-          height={0.237}
-          strength={0.25}
-          spill={false}
-        />
-      </group>
       <group position={[0, 0.16, 0.159]}>
         <GlassPane
           width={0.388}

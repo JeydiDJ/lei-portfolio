@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { ExtrudeGeometry, Path, Shape } from "three";
 import { Box, Cylinder } from "../Objects";
-import { towerDimensions } from "./dimensions";
+import { gpuLift, towerDimensions } from "./dimensions";
 import { towerPalette } from "./towerPalette";
 
 export const rearFanY = 0.275;
@@ -19,6 +19,13 @@ export default function RearPanel() {
     const vent = new Path();
     vent.absarc(0, rearFanY, 0.137, 0, Math.PI * 2, true);
     shape.holes.push(vent);
+    const expansion = new Path();
+    expansion.moveTo(-0.151, -0.202 + gpuLift);
+    expansion.lineTo(-0.151, -0.058 + gpuLift);
+    expansion.lineTo(0.152, -0.058 + gpuLift);
+    expansion.lineTo(0.152, -0.202 + gpuLift);
+    expansion.closePath();
+    shape.holes.push(expansion);
     return new ExtrudeGeometry(shape, {
       depth: 0.018,
       bevelEnabled: false,

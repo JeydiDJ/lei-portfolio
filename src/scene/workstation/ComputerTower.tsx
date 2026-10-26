@@ -257,7 +257,7 @@ export default function ComputerTower() {
           color="#17212b"
           radius={0.002}
         />
-        {[-0.09, -0.13, -0.17, -0.21].map((y) => (
+        {[-0.215].map((y) => (
           <Box
             key={y}
             position={[-0.045, y, -depth / 2 - 0.014]}

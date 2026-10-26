@@ -1,5 +1,6 @@
 import { Box } from "../Objects";
 import Cable from "./Cable";
+import { gpuLift } from "./dimensions";
 
 /** Visible sleeved leads end at sockets or disappear through tray/shroud grommets. */
 export default function TowerCables() {
@@ -27,24 +28,38 @@ export default function TowerCables() {
           ]}
         />
       ))}
-      {/* GPU auxiliary power loops down into the PSU shroud. */}
+      {/* Socket sits at the PCB's glass-facing edge, above the cooler fins. */}
       <Box
-        position={[-0.163, -0.104, 0.13]}
-        size={[0.03, 0.034, 0.068]}
-        color="#555b5d"
+        position={[-0.146, -0.066 + gpuLift, 0.035]}
+        size={[0.016, 0.026, 0.049]}
+        color="#343a3a"
         radius={0.003}
       />
-      {Array.from({ length: 5 }, (_, i) => (
+      <Box
+        position={[-0.165, -0.066 + gpuLift, 0.035]}
+        size={[0.03, 0.024, 0.043]}
+        color="#c7cbc4"
+        radius={0.003}
+      />
+      <Box
+        position={[-0.159, -0.05 + gpuLift, 0.035]}
+        size={[0.018, 0.006, 0.016]}
+        color="#7b827d"
+        radius={0.001}
+      />
+      {/* Sleeves leave the seated plug straight before a gentle bend to the shroud. */}
+      {Array.from({ length: 6 }, (_, i) => (
         <Cable
           key={`gpu-${i}`}
-          radius={0.0035}
-          color={i % 2 ? "#c4c3bb" : "#9a9d98"}
+          radius={0.0027}
+          color={i % 2 ? "#d7d9d1" : "#c1c7bf"}
           points={[
-            [-0.177, -0.103, 0.108 + i * 0.01],
-            [-0.192, -0.146, 0.14 + i * 0.01],
-            [-0.15, -0.202, 0.23 + i * 0.008],
-            [-0.06, -0.218, 0.26 + i * 0.008],
-            [0.025, -0.227, 0.22 + i * 0.008],
+            [-0.178, -0.066 + gpuLift, 0.018 + i * 0.0068],
+            [-0.197, -0.066 + gpuLift, 0.018 + i * 0.0068],
+            [-0.208, -0.075, 0.032 + i * 0.0068],
+            [-0.198, -0.165, 0.1 + i * 0.0068],
+            [-0.12, -0.207, 0.2 + i * 0.0068],
+            [0.025, -0.227, 0.22 + i * 0.0068],
           ]}
         />
       ))}

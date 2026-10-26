@@ -1422,3 +1422,39 @@ body,
     grid-template-areas: "nav";
   }
 }
+
+@media (max-width: 760px) {
+  .control-buttons,
+  .night .control-buttons {
+    top: max(16px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: auto;
+    transform: none;
+    gap: 2px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    color: #fff;
+  }
+  .control-buttons .icon-button,
+  .night .control-buttons .icon-button,
+  .light-intensity-controls > button[aria-expanded="true"] {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: #fff;
+  }
+  .control-buttons .icon-button svg {
+    filter: drop-shadow(0 1px 2px #211c1e99);
+  }
+  .control-buttons .icon-button:hover,
+  .control-buttons .icon-button:active {
+    background: transparent;
+    color: #ead3ca;
+  }
+  .light-intensity-controls .room-light-control {
+    top: 0;
+    bottom: auto;
+  }
+}
