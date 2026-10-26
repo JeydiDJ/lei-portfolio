@@ -8,6 +8,9 @@ import {
   type Group,
 } from "three";
 import StaticBatch from "../StaticBatch";
+import CursedDuckFace, {
+  useCursedDuck,
+} from "../../seasonal/halloween/CursedDuck";
 
 type Vec3 = [number, number, number];
 
@@ -136,6 +139,7 @@ const tetraFaces = [
 export default memo(function DuckDisplay() {
   const body = useRef<Group>(null);
   const head = useRef<Group>(null);
+  const applyCurse = useCursedDuck(body, head);
   const reducedMotion = useRef(false);
   const motion = useRef({
     mode: -1,
@@ -162,6 +166,11 @@ export default memo(function DuckDisplay() {
       body.current!.position.y = 0.028;
       head.current!.rotation.set(0, 0, 0);
     };
+    if (applyCurse(now)) {
+      state.mode = -1;
+      state.waitUntil = now + 8000;
+      return;
+    }
     if (reducedMotion.current || document.hidden) {
       if (state.mode !== -1) {
         reset();
@@ -302,6 +311,7 @@ export default memo(function DuckDisplay() {
             userData={{ dynamic: true }}
           >
             <group position={[0, -0.7, -0.02]}>
+              <CursedDuckFace />
               <StaticBatch>
                 <PolygonPart
                   vertices={hoodVertices}

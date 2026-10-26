@@ -9,10 +9,12 @@ import {
 } from "three";
 import { Box, Cylinder } from "../Objects";
 import { useEnvironmentTransition } from "../EnvironmentTransition";
+import { useSeasonalFeatures } from "../../seasonal/SeasonalFeatures";
 
 /** A warm, hooded gallery light aimed at the printed IDs and cork backing. */
 export default function BoardSpotlight() {
   const environment = useEnvironmentTransition();
+  const seasonal = useSeasonalFeatures();
   const light = useRef<SpotLight>(null);
   const lens = useRef<MeshStandardMaterial>(null);
   const { target, orientation } = useMemo(() => {
@@ -29,9 +31,12 @@ export default function BoardSpotlight() {
   }, []);
   useFrame(() => {
     // Remains a reading light at the dim end; independent of the window blinds.
-    if (light.current) light.current.intensity = 3 + 3 * environment.roomLight;
+    if (light.current)
+      light.current.intensity =
+        (3 + 3 * environment.roomLight) * seasonal.lightMultiplier;
     if (lens.current)
-      lens.current.emissiveIntensity = 0.35 + 0.55 * environment.roomLight;
+      lens.current.emissiveIntensity =
+        (0.35 + 0.55 * environment.roomLight) * seasonal.lightMultiplier;
   });
   return (
     <group>

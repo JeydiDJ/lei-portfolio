@@ -1,6 +1,7 @@
 import { Box, Cylinder } from "./Objects";
 import { useEffect, useMemo } from "react";
 import { ExtrudeGeometry, Path, Shape } from "three";
+import { chairLayout } from "./layout";
 
 const upholstery = "#e6b6c5";
 const inset = "#f0d6de";
@@ -42,7 +43,7 @@ export default function DeskChair() {
   }, []);
   useEffect(() => () => back.dispose(), [back]);
   return (
-    <group position={[-0.65, 0, 0.35]} rotation={[0, -0.18, 0]}>
+    <group position={chairLayout.position} rotation={[0, chairLayout.yaw, 0]}>
       <Cylinder
         position={[0, 0.52, 0]}
         args={[0.045, 0.06, 0.65]}

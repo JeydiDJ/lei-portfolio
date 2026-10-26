@@ -5,11 +5,13 @@ import { useFrame } from "@react-three/fiber";
 import { Color, MeshStandardMaterial } from "three";
 import { useEnvironmentTransition } from "./EnvironmentTransition";
 import { lightingLevels } from "./lightingLevels";
+import { useSeasonalFeatures } from "../seasonal/SeasonalFeatures";
 const offColor = new Color("#e2e0d9"),
   onColor = new Color("#fff0d6");
 
 export default function Ceiling() {
   const blend = useEnvironmentTransition();
+  const seasonal = useSeasonalFeatures();
   const diffusers = useRef<(MeshStandardMaterial | null)[]>([]);
   useFrame(() => {
     const { indoor } = lightingLevels(
@@ -19,8 +21,12 @@ export default function Ceiling() {
     );
     for (const material of diffusers.current) {
       if (!material) continue;
-      material.color.lerpColors(offColor, onColor, indoor);
-      material.emissiveIntensity = 2 * indoor;
+      material.color.lerpColors(
+        offColor,
+        onColor,
+        indoor * seasonal.lightMultiplier,
+      );
+      material.emissiveIntensity = 2 * indoor * seasonal.lightMultiplier;
     }
   });
   return (

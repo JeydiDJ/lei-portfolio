@@ -12,6 +12,7 @@ import {
 import { roomLayout } from "./layout";
 import { useEnvironmentTransition } from "./EnvironmentTransition";
 import { lightingLevels } from "./lightingLevels";
+import { useSeasonalFeatures } from "../seasonal/SeasonalFeatures";
 
 const dayAmbient = new Color("#eef5ff"),
   nightAmbient = new Color("#ffe5c7");
@@ -30,6 +31,7 @@ const twilightFog = new Color("#bb9094");
 export default function Lighting() {
   const { gl, size, scene } = useThree();
   const blend = useEnvironmentTransition();
+  const seasonal = useSeasonalFeatures();
   const ambient = useRef<AmbientLight>(null),
     hemisphere = useRef<HemisphereLight>(null);
   const ceiling = useRef<SpotLight>(null),
@@ -63,6 +65,15 @@ export default function Lighting() {
     const n = blend.night,
       b = blend.blinds,
       levels = lightingLevels(n, b, blend.roomLight);
+    for (const key of [
+      "ambient",
+      "hemisphere",
+      "ceiling",
+      "secondary",
+      "sun",
+      "window",
+    ] as const)
+      levels[key] *= seasonal.lightMultiplier;
     gl.toneMappingExposure = 1 - 0.1 * n;
     if (ambient.current) {
       // Approximate warm light bouncing off the white room, not outdoor sky fill.

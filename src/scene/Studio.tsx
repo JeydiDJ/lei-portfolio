@@ -16,6 +16,8 @@ import PerformanceBudget from "./PerformanceBudget";
 import ObjectCallouts from "./ObjectCallouts";
 import Lighting from "./Lighting";
 import { EnvironmentTransition } from "./EnvironmentTransition";
+import SeasonalFeatures from "../seasonal/SeasonalFeatures";
+import HalloweenRoom from "../seasonal/halloween/HalloweenRoom";
 
 function SceneFallback({ onSelect }: { onSelect: (section: Section) => void }) {
   return (
@@ -131,40 +133,46 @@ export default function Studio({
         fallback={<SceneFallback onSelect={onSelect} />}
       >
         <PerformanceBudget />
-        <EnvironmentTransition
-          night={night}
-          twilight={twilight}
-          roomLight={roomLight}
-          blindsDown={blindsDown}
-        >
-          <color
-            attach="background"
-            args={[night > 0.5 ? "#25232e" : "#68606a"]}
-          />
-          <fog
-            attach="fog"
-            args={[night > 0.5 ? "#17233b" : "#b7cadc", 28, 95]}
-          />
-          <RoomCamera
-            section={activeSection}
-            resetKey={resetKey}
-            experienceIndex={experienceIndex}
-          />
-          <Lighting />
-          <Suspense fallback={null}>
-            <Room
-              onSelect={onSelect}
-              night={night}
-              blindsDown={blindsDown}
-              onToggleBlinds={onToggleBlinds}
-              activeSection={activeSection}
-              onClose={onClose}
-              experienceIndex={experienceIndex}
-              onExperience={onExperience}
+        <SeasonalFeatures paused={activeSection !== null}>
+          <EnvironmentTransition
+            night={night}
+            twilight={twilight}
+            roomLight={roomLight}
+            blindsDown={blindsDown}
+          >
+            <color
+              attach="background"
+              args={[night > 0.5 ? "#25232e" : "#68606a"]}
             />
-            <ObjectCallouts activeSection={activeSection} onSelect={onSelect} />
-          </Suspense>
-        </EnvironmentTransition>
+            <fog
+              attach="fog"
+              args={[night > 0.5 ? "#17233b" : "#b7cadc", 28, 95]}
+            />
+            <RoomCamera
+              section={activeSection}
+              resetKey={resetKey}
+              experienceIndex={experienceIndex}
+            />
+            <Lighting />
+            <Suspense fallback={null}>
+              <Room
+                onSelect={onSelect}
+                night={night}
+                blindsDown={blindsDown}
+                onToggleBlinds={onToggleBlinds}
+                activeSection={activeSection}
+                onClose={onClose}
+                experienceIndex={experienceIndex}
+                onExperience={onExperience}
+              />
+              <ObjectCallouts
+                activeSection={activeSection}
+                onSelect={onSelect}
+              />
+              <HalloweenRoom />
+            </Suspense>
+          </EnvironmentTransition>
+        </SeasonalFeatures>
       </Canvas>
     </SceneBoundary>
   );

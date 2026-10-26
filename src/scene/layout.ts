@@ -1,5 +1,10 @@
 // Shared dimensions keep the architecture, furniture, and interaction points aligned.
 export const deskLayout = { width: 4.15, offsetZ: -1.35 };
+export const chairLayout = {
+  position: [-0.65, 0, 0.35] as [number, number, number],
+  yaw: -0.18,
+  seatHeight: 1.1,
+};
 export const adFrameLayouts = {
   portrait: {
     position: [-4.54, 3.4, -0.8] as [number, number, number],
