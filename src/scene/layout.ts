@@ -18,7 +18,8 @@ export const adFrameLayouts = {
   },
 };
 export const musicPlayerLayout = {
-  position: [-1.75, 1.8, -0.84] as [number, number, number],
+  position: [-1.75, 1.735, -0.84] as [number, number, number],
+  screen: [-0.035, 0.105, 0.179] as [number, number, number],
   yaw: Math.atan2(0.92, 2.54),
 };
 export const phoneLayout = {
@@ -29,6 +30,16 @@ export const phoneLayout = {
   width: 0.158,
   height: 0.3246,
   depth: 0.0172,
+};
+export const tabletLayout = {
+  position: [1.23, 1.462, -0.04] as [number, number, number],
+  yaw: -0.17,
+  width: 0.62,
+  depth: 0.402,
+  thickness: 0.018,
+  screenWidth: 0.576,
+  screenHeight: 0.36,
+  screenY: 0.0105,
 };
 export const monitorFocus: [number, number, number] = [
   -0.35,

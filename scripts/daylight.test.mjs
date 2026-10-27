@@ -18,7 +18,9 @@ async function loadSource(path) {
   );
 }
 const { philippineDaylight } = await loadSource("../src/scene/daylight.ts");
-const { lightingLevels } = await loadSource("../src/scene/lightingLevels.ts");
+const { lightingLevels, roomLightPower } = await loadSource(
+  "../src/scene/lightingLevels.ts",
+);
 
 test("nighttime indoor illumination is unchanged by blinds", () => {
   const open = lightingLevels(1, 0);
@@ -58,11 +60,27 @@ test("room dimmer changes indoor light without changing daylight or blinds indep
   const bright = lightingLevels(1, 0, 1);
   for (const source of ["ceiling", "secondary", "ambient", "hemisphere"]) {
     assert.ok(
-      dim[source] > 0 &&
+      dim[source] === 0 &&
         dim[source] < cozy[source] &&
         cozy[source] < bright[source],
     );
   }
+});
+test("slider reaches true off and a brighter maximum across the day/night cycle", () => {
+  assert.equal(roomLightPower(0), 0);
+  assert.equal(roomLightPower(1), 2.4);
+  assert.equal(roomLightPower(-1), 0);
+  assert.equal(roomLightPower(2), 2.4);
+  for (const night of [0, 0.5, 1]) {
+    for (const blinds of [0, 0.5, 1]) {
+      const off = lightingLevels(night, blinds, 0);
+      assert.equal(off.indoor, 0);
+      assert.equal(off.ceiling, 0);
+      assert.equal(off.secondary, 0);
+      assert.ok(lightingLevels(night, blinds, 1).ceiling > 0);
+    }
+  }
+  assert.ok(lightingLevels(1, 0, 1).ceiling > 80);
 });
 const { philippineClockParts } = await loadSource(
   "../src/scene/workstation/clockTime.ts",

@@ -10,6 +10,7 @@ import {
 import { Box, Cylinder } from "../Objects";
 import { useEnvironmentTransition } from "../EnvironmentTransition";
 import { useSeasonalFeatures } from "../../seasonal/SeasonalFeatures";
+import { roomLightPower } from "../lightingLevels";
 
 /** A warm, hooded gallery light aimed at the printed IDs and cork backing. */
 export default function BoardSpotlight() {
@@ -30,13 +31,10 @@ export default function BoardSpotlight() {
     };
   }, []);
   useFrame(() => {
-    // Remains a reading light at the dim end; independent of the window blinds.
-    if (light.current)
-      light.current.intensity =
-        (3 + 3 * environment.roomLight) * seasonal.lightMultiplier;
-    if (lens.current)
-      lens.current.emissiveIntensity =
-        (0.35 + 0.55 * environment.roomLight) * seasonal.lightMultiplier;
+    const power =
+      roomLightPower(environment.roomLight) * seasonal.lightMultiplier;
+    if (light.current) light.current.intensity = 6 * power;
+    if (lens.current) lens.current.emissiveIntensity = 0.9 * power;
   });
   return (
     <group>

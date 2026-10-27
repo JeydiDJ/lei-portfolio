@@ -9,7 +9,7 @@ import {
 import { adFrameLayouts } from "../layout";
 import { Box } from "../Objects";
 import SelectionOutline from "../SelectionOutline";
-import GlassPane from "../GlassPane";
+import WallArtSpotlight from "../WallArtSpotlight";
 import { button, colors, containedImage, rect, text, wrap } from "./drawing";
 import {
   useObjectSurface,
@@ -221,17 +221,15 @@ export default function AdFrame({
         color="#eee8dc"
         radius={0.002}
       />
-      <mesh position={[0, 0, 0.052]} {...surface.events}>
+      <mesh position={[0, 0, 0.052]} receiveShadow {...surface.events}>
         <planeGeometry args={[layout.width, layout.height]} />
-        <meshBasicMaterial map={surface.texture} toneMapped={false} />
-      </mesh>
-      <group position={[0, 0, 0.055]}>
-        <GlassPane
-          width={layout.width}
-          height={layout.height}
-          strength={active ? 0.18 : 0.45}
+        <meshStandardMaterial
+          map={surface.texture}
+          roughness={0.95}
+          metalness={0}
         />
-      </group>
+      </mesh>
+      <WallArtSpotlight height={layout.height} />
     </group>
   );
 }

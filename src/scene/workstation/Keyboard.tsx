@@ -84,7 +84,7 @@ function layoutKeys() {
       x: left + (x + units / 2) * pitch,
       z: row === 0 ? -0.11 : -0.055 + (row - 1) * pitch,
       units,
-      accent: label === "Esc" || label === "Enter",
+      accent: ["Esc", "Enter", "", "←", "↓", "↑", "→"].includes(label),
     });
   add("Esc", 0, 0);
   for (let i = 0; i < 12; i++)
@@ -188,7 +188,7 @@ export default function Keyboard() {
     c.textAlign = "center";
     c.textBaseline = "middle";
     keys.forEach((key) => {
-      c.fillStyle = key.accent ? "#78474d" : "#68605d";
+      c.fillStyle = key.accent ? "#f2e8dc" : "#68605d";
       c.font = `500 ${key.label.length > 2 ? 25 : 33}px "DM Sans", sans-serif`;
       c.fillText(
         key.label,
@@ -214,11 +214,7 @@ export default function Keyboard() {
       instances.current!.setColorAt(
         i,
         new Color(
-          key.accent || ["←", "↓", "↑", "→"].includes(key.label)
-            ? "#d6b2b6"
-            : key.label.length > 1
-              ? "#e8e3dd"
-              : "#f2eee8",
+          key.accent ? "#781b20" : key.label.length > 1 ? "#e8e3dd" : "#f2eee8",
         ),
       );
       const switchMatrix = new Matrix4().makeScale(

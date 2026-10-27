@@ -1,9 +1,11 @@
 import { useEffect, useMemo } from "react";
+import { useTexture } from "@react-three/drei";
 import {
   BufferGeometry,
   Float32BufferAttribute,
   Shape,
   ExtrudeGeometry,
+  SRGBColorSpace,
 } from "three";
 import { mouseDimensions as dimensions, workstationScale } from "./dimensions";
 import Cable from "./Cable";
@@ -113,6 +115,11 @@ function noseCap() {
 }
 
 export default function Mouse() {
+  const logo = useTexture("/images/leila-logo.png");
+  useEffect(() => {
+    logo.colorSpace = SRGBColorSpace;
+    logo.needsUpdate = true;
+  }, [logo]);
   const parts = useMemo(() => {
     const outline = new Shape();
     const points = Array.from({ length: 49 }, (_, i) => shellPoint(i / 48, 1));
@@ -120,7 +127,14 @@ export default function Mouse() {
     points.slice(1).forEach(([x, , z]) => outline.lineTo(x * 0.985, -z));
     [...points].reverse().forEach(([x, , z]) => outline.lineTo(-x * 0.985, -z));
     outline.closePath();
+    // A curved decal follows the palm shell rather than floating above it.
+    const logo = shellPatch(0.75, 0.89, -0.25, 0.25, 0.00035, 14, 12);
+    const uvs: number[] = [];
+    for (let row = 0; row <= 14; row++)
+      for (let col = 0; col <= 12; col++) uvs.push(col / 12, 1 - row / 14);
+    logo.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
     return {
+      logo,
       body: shellPatch(0, 1, -1, 1, 0),
       nose: noseCap(),
       left: shellPatch(0.018, 0.43, -0.94, -0.013, 0.0015, 20, 12),
@@ -172,6 +186,17 @@ export default function Mouse() {
       ))}
       <mesh geometry={parts.body} castShadow receiveShadow>
         <meshStandardMaterial color="#d2d0c9" roughness={0.62} />
+      </mesh>
+      <mesh geometry={parts.logo} receiveShadow name="Printed rose logo">
+        <meshStandardMaterial
+          map={logo}
+          color="#000000"
+          transparent
+          depthWrite={false}
+          roughness={0.8}
+          polygonOffset
+          polygonOffsetFactor={-1}
+        />
       </mesh>
       <mesh geometry={parts.nose} castShadow>
         <meshStandardMaterial color="#d2d0c9" roughness={0.62} />

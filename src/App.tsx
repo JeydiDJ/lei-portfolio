@@ -176,12 +176,15 @@ export default function App() {
               {lightControlsOpen && (
                 <label className="room-light-control" id="room-light-slider">
                   <span>
-                    Room light <output>{roomLight}%</output>
+                    Room light{" "}
+                    <output>{roomLight === 0 ? "Off" : `${roomLight}%`}</output>
                   </span>
                   <input
                     type="range"
                     aria-label="Room light"
-                    aria-valuetext={`${roomLight}% brightness`}
+                    aria-valuetext={
+                      roomLight === 0 ? "Off" : `${roomLight}% brightness`
+                    }
                     min={0}
                     max={100}
                     step={1}
@@ -191,8 +194,8 @@ export default function App() {
                     }
                   />
                   <span className="room-light-scale">
-                    <span>Dim</span>
-                    <span>Bright</span>
+                    <span>Off</span>
+                    <span>Maximum</span>
                   </span>
                 </label>
               )}

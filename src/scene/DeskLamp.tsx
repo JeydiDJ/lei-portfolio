@@ -13,6 +13,7 @@ import { Box, Cylinder } from "./Objects";
 import Cable from "./workstation/Cable";
 import { useEnvironmentTransition } from "./EnvironmentTransition";
 import { useSeasonalFeatures } from "../seasonal/SeasonalFeatures";
+import { roomLightPower } from "./lightingLevels";
 
 type V3 = [number, number, number];
 const enamel = "#b887a0";
@@ -121,11 +122,9 @@ export default function DeskLamp() {
     [shade],
   );
   useFrame(() => {
-    if (light.current)
-      light.current.intensity = 2.8 * blend.night * seasonal.lightMultiplier;
-    if (bulb.current)
-      bulb.current.emissiveIntensity =
-        2 * blend.night * seasonal.lightMultiplier;
+    const power = roomLightPower(blend.roomLight) * seasonal.lightMultiplier;
+    if (light.current) light.current.intensity = 2.8 * power;
+    if (bulb.current) bulb.current.emissiveIntensity = 2 * power;
   });
   return (
     <group position={[-1.86, 1.45, -1.28]}>

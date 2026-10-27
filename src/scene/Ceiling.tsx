@@ -24,7 +24,7 @@ export default function Ceiling() {
       material.color.lerpColors(
         offColor,
         onColor,
-        indoor * seasonal.lightMultiplier,
+        Math.min(1, indoor) * seasonal.lightMultiplier,
       );
       material.emissiveIntensity = 2 * indoor * seasonal.lightMultiplier;
     }

@@ -13,6 +13,7 @@ import {
   musicPlayerLayout,
   adFrameLayouts,
   phoneLayout,
+  tabletLayout,
 } from "./layout";
 
 export default function RoomCamera({
@@ -112,8 +113,12 @@ export default function RoomCamera({
         target.current.z,
       );
     } else if (section === "about") {
-      target.current.set(1.23, 1.528, -0.04 + deskLayout.offsetZ);
-      const distance = fit(0.54, 0.38);
+      target.current.set(
+        tabletLayout.position[0],
+        tabletLayout.position[1] + tabletLayout.screenY,
+        tabletLayout.position[2] + deskLayout.offsetZ,
+      );
+      const distance = fit(0.7, 0.44);
       destination.current.set(
         target.current.x - 0.03 * distance,
         target.current.y + distance,
@@ -142,11 +147,12 @@ export default function RoomCamera({
       const [x, y, z] = musicPlayerLayout.position;
       const directionX = Math.sin(musicPlayerLayout.yaw);
       const directionZ = Math.cos(musicPlayerLayout.yaw);
-      const distance = fit(0.43, 0.3);
+      const [screenX, screenY, screenZ] = musicPlayerLayout.screen;
+      const distance = mobile ? fit(0.43, 0.3) : fit(0.62, 0.6);
       target.current.set(
-        x + directionX * 0.16,
-        y + 0.16,
-        z + deskLayout.offsetZ + directionZ * 0.16,
+        x + directionZ * screenX + directionX * screenZ,
+        y + (mobile ? screenY : 0),
+        z + deskLayout.offsetZ - directionX * screenX + directionZ * screenZ,
       );
       destination.current.set(
         target.current.x + directionX * distance,

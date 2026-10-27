@@ -2,7 +2,7 @@ import { useTexture } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { SRGBColorSpace } from "three";
 import { Box } from "./Objects";
-import GlassPane from "./GlassPane";
+import WallArtSpotlight from "./WallArtSpotlight";
 
 /** Preserve the original portrait ratio inside a narrow, matted wall frame. */
 export default function FramedPhoto() {
@@ -26,13 +26,11 @@ export default function FramedPhoto() {
         color="#e9e2dc"
         radius={0.002}
       />
-      <mesh position={[0, 0, 0.052]}>
+      <mesh position={[0, 0, 0.052]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshStandardMaterial map={texture} roughness={0.95} metalness={0} />
       </mesh>
-      <group position={[0, 0, 0.055]}>
-        <GlassPane width={width} height={height} strength={0.45} />
-      </group>
+      <WallArtSpotlight height={height} />
     </group>
   );
 }

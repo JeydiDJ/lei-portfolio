@@ -3,9 +3,9 @@ import { useEffect, useMemo } from "react";
 import { ExtrudeGeometry, Path, Shape } from "three";
 import { chairLayout } from "./layout";
 
-const upholstery = "#e6b6c5";
-const inset = "#f0d6de";
-const frame = "#36343b";
+const upholstery = "#6e2634";
+const inset = "#e6e1d7";
+const frame = "#30292b";
 
 export default function DeskChair() {
   const back = useMemo(() => {

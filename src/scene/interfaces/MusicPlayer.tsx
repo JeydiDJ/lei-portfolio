@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
-import { Box, Cylinder } from "../Objects";
-import SelectionOutline from "../SelectionOutline";
+import SpeakerCabinet from "./SpeakerCabinet";
 import GlassPane from "../GlassPane";
 import { containedImage, rect, text } from "./drawing";
 import { control, icon } from "./osDrawing";
@@ -304,85 +303,26 @@ export default function MusicPlayer({
         volume={music.volume}
         getEnergy={music.getEnergy}
       />
-      <Box
-        size={[0.44, 0.66, 0.3]}
-        color={hovered && !active ? "#e6b6c5" : "#d4c2ba"}
-        radius={0.04}
-      />
-      <SelectionOutline size={[0.44, 0.66, 0.3]} visible={hovered && !active} />
-      <Box
-        position={[0, 0, 0.15]}
-        size={[0.412, 0.625, 0.012]}
-        color="#39393e"
-        radius={0.03}
-      />
-      <mesh position={[0, 0.16, 0.158]} {...surface.events}>
-        <planeGeometry args={[0.388, 0.237]} />
-        <meshBasicMaterial map={surface.texture} toneMapped={false} />
-      </mesh>
-      <group position={[0, 0.16, 0.159]}>
-        <GlassPane
-          width={0.388}
-          height={0.237}
-          strength={active ? 0.16 : 0.3}
-        />
-      </group>
-      <group position={[0, -0.16, 0.164]}>
-        <Cylinder
-          position={[0, 0, 0]}
-          rotation={[Math.PI / 2, 0, 0]}
-          args={[0.132, 0.132, 0.018]}
-          color="#77727a"
-        />
-        <Cylinder
-          position={[0, 0, 0.012]}
-          rotation={[Math.PI / 2, 0, 0]}
-          args={[0.117, 0.117, 0.012]}
-          color="#202327"
-        />
-        <Cylinder
-          position={[0, 0, 0.02]}
-          rotation={[Math.PI / 2, 0, 0]}
-          args={[0.068, 0.068, 0.012]}
-          color="#4a454e"
-        />
-        <mesh position={[0, 0, 0.032]}>
-          <sphereGeometry args={[0.044, 20, 12]} />
-          <meshStandardMaterial color="#c697ae" roughness={0.5} />
+      <SpeakerCabinet
+        hovered={hovered}
+        active={active}
+        playing={music.playing}
+        volume={music.volume}
+        onToggle={music.toggle}
+        onVolume={music.setVolume}
+      >
+        <mesh position={musicPlayerLayout.screen} {...surface.events}>
+          <planeGeometry args={[0.388, 0.237]} />
+          <meshBasicMaterial map={surface.texture} toneMapped={false} />
         </mesh>
-        {Array.from({ length: 28 }, (_, i) => {
-          const angle = (i / 28) * Math.PI * 2;
-          return (
-            <mesh
-              key={i}
-              position={[
-                Math.cos(angle) * 0.093,
-                Math.sin(angle) * 0.093,
-                0.022,
-              ]}
-            >
-              <circleGeometry args={[0.004, 6]} />
-              <meshBasicMaterial color="#a59aa5" />
-            </mesh>
-          );
-        })}
-      </group>
-      {[-0.15, 0.15].map((x) => (
-        <Box
-          key={x}
-          position={[x, -0.34, 0]}
-          size={[0.07, 0.02, 0.21]}
-          color="#39393e"
-          radius={0.006}
-        />
-      ))}
-      <mesh position={[0.165, -0.015, 0.16]}>
-        <circleGeometry args={[0.007, 12]} />
-        <meshBasicMaterial
-          color={music.playing ? "#abd4b1" : "#b38f9e"}
-          toneMapped={false}
-        />
-      </mesh>
+        <group position={[-0.035, 0.105, 0.1805]}>
+          <GlassPane
+            width={0.388}
+            height={0.237}
+            strength={active ? 0.16 : 0.3}
+          />
+        </group>
+      </SpeakerCabinet>
     </group>
   );
 }
