@@ -139,6 +139,15 @@ export default function useWorkScreen(
           },
         ),
       );
+      control(
+        c,
+        actions,
+        ui,
+        "Open videos and commercials on TV",
+        [31, 385, 155, 42],
+        () => onNavigate("tv"),
+        { icon: "play", text: "Videos & film", font: 16 },
+      );
       text(c, "Leila's portfolio", 39, 470, 15, os.muted);
       const previews = [first, second, third, fourth];
       if (!project) {

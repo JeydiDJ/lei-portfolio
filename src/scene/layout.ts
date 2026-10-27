@@ -22,6 +22,14 @@ export const musicPlayerLayout = {
   screen: [-0.035, 0.105, 0.179] as [number, number, number],
   yaw: Math.atan2(0.92, 2.54),
 };
+export const televisionLayout = {
+  position: [5.28, 0, 0.4] as [number, number, number],
+  yaw: -Math.PI / 2,
+  screenY: 1.95,
+  screenZ: 0.048,
+  width: 2.8,
+  height: 1.575,
+};
 export const phoneLayout = {
   position: [-1.6, 1.464, 0.05] as [number, number, number],
   openLift: 0.006,

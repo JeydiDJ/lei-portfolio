@@ -14,6 +14,7 @@ import {
   adFrameLayouts,
   phoneLayout,
   tabletLayout,
+  televisionLayout,
 } from "./layout";
 
 export default function RoomCamera({
@@ -111,6 +112,17 @@ export default function RoomCamera({
         target.current.x + fit(layout.width + 0.2, layout.height + 0.2),
         target.current.y,
         target.current.z,
+      );
+    } else if (section === "tv") {
+      const tv = televisionLayout;
+      const distance = mobile ? fit(3.0, 1.78) : fit(3.4, 2.9);
+      const x = tv.position[0] + Math.sin(tv.yaw) * tv.screenZ;
+      const z = tv.position[2] + Math.cos(tv.yaw) * tv.screenZ;
+      target.current.set(x, mobile ? tv.screenY : 1.45, z);
+      destination.current.set(
+        x + Math.sin(tv.yaw) * distance,
+        target.current.y + 0.03,
+        z + Math.cos(tv.yaw) * distance,
       );
     } else if (section === "about") {
       target.current.set(

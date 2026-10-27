@@ -19,6 +19,7 @@ import MusicPlayer from "./interfaces/MusicPlayer";
 import AdFrame from "./interfaces/AdFrame";
 import ContactPhone from "./interfaces/ContactPhone";
 import RoseVase from "./RoseVase";
+import Television from "./media/Television";
 
 export default function Room({
   onSelect,
@@ -67,6 +68,11 @@ export default function Room({
         onClose={onClose}
       />
       <Rug />
+      <Television
+        active={activeSection === "tv"}
+        onOpen={() => onSelect("tv")}
+        onClose={onClose}
+      />
       {/* The open desk keeps the existing workstation height and footprint. */}
       <group position={[0, 0, deskLayout.offsetZ]}>
         <Desk />

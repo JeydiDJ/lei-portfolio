@@ -6,6 +6,7 @@ export type Section =
   | "experience"
   | "music"
   | "contact"
+  | "tv"
   | "ads-portrait"
   | "ads-square";
 export type Category =

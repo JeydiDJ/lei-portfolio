@@ -83,7 +83,9 @@ export default function App() {
         <div className="room-controls">
           <nav className="room-sections" aria-label="Room sections">
             <button
-              aria-current={section === "work" ? "page" : undefined}
+              aria-current={
+                section === "work" || section === "tv" ? "page" : undefined
+              }
               onClick={() => setSection("work")}
             >
               <span>01</span> Work
