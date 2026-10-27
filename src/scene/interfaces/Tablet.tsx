@@ -5,13 +5,14 @@ import {
   tools,
   education,
   learning,
+  type Section,
 } from "../../data/portfolio";
 import { Box } from "../Objects";
 import SelectionOutline from "../SelectionOutline";
 import ScreenGlow from "../ScreenGlow";
 import GlassPane from "../GlassPane";
 import { containedImage, rect, text, wrap } from "./drawing";
-import { brand, brandButton, brandMark, rule } from "./brandDrawing";
+import { control, icon, os, status } from "./osDrawing";
 import {
   useObjectSurface,
   useSurfaceImage,
@@ -23,11 +24,13 @@ export default function Tablet({
   onOpen,
   onClose,
   onContact,
+  onNavigate,
 }: {
   active: boolean;
   onOpen: () => void;
   onClose: () => void;
   onContact: () => void;
+  onNavigate: (section: Section) => void;
 }) {
   const portrait = useSurfaceImage(profile.tabletPortrait);
   const logo = useSurfaceImage("/images/leila-logo.png");
@@ -36,88 +39,127 @@ export default function Tablet({
     "about" | "skills" | "education" | "learning"
   >("about");
   const draw = useCallback<SurfaceDraw>(
-    (c, actions) => {
-      rect(c, 0, 0, 720, 500, brand.paper);
-      brandMark(c, logo, 18, 9, 54);
-      text(c, "About me", 88, 44, 29, brand.ink, 600);
-      rule(c, 24, 68, 672);
-      if (active)
-        brandButton(c, actions, "← Room", [550, 16, 146, 40], onClose, {
-          font: 22,
-        });
+    (c, actions, ui) => {
+      rect(c, 0, 0, 720, 500, "#3d272f");
+      status(c, 720, true);
+      rect(c, 14, 36, 692, 411, os.paper, 12);
+      rect(c, 14, 36, 150, 411, "#e9e2de", 12);
+      rect(c, 148, 36, 16, 411, "#e9e2de");
+      if (logo) containedImage(c, logo, 27, 55, 31, 34);
+      text(c, "Leila", 69, 77, 23, os.ink, 600);
+      text(c, "Personal profile", 28, 111, 15, os.muted);
       (
         [
-          ["about", "About"],
-          ["skills", "Skills"],
-          ["education", "Education"],
-          ["learning", "Learning"],
+          ["about", "About me", "person"],
+          ["skills", "Skills & tools", "spark"],
+          ["education", "Education", "school"],
+          ["learning", "Learning", "folder"],
         ] as const
-      ).forEach(([key, label], index) => {
-        const x = 24 + index * 174;
-        text(
+      ).forEach(([key, label, glyph], i) => {
+        control(
           c,
+          actions,
+          ui,
           label,
-          x + 12,
-          105,
-          23,
-          page === key ? brand.burgundy : brand.muted,
-          page === key ? 600 : 400,
+          [23, 133 + i * 46, 132, 39],
+          () => setPage(key),
+          { icon: glyph, text: label, selected: page === key, font: 15 },
         );
-        if (page === key) rect(c, x + 12, 115, 138, 2, brand.burgundy);
-        actions.push({
-          label,
-          rect: [x, 78, 162, 40],
-          run: () => setPage(key),
-        });
       });
-      if (page === "about") {
-        rect(c, 24, 136, 190, 280, "#e1d9d4", 2);
-        if (portrait) containedImage(c, portrait, 24, 136, 190, 280);
-        text(c, profile.fullName, 238, 157, 30, brand.ink, 600);
-        wrap(c, profile.bio, 238, 197, 454, 23, 30, brand.ink);
-        text(c, profile.location, 238, 422, 22, brand.muted);
-      } else if (page === "skills") {
-        text(c, "Creative skills", 28, 157, 28, brand.ink, 600);
-        skills.forEach((skill, index) =>
-          text(c, skill, 28, 200 + index * 38, 24, brand.ink),
-        );
-        text(c, "Tools", 397, 157, 28, brand.ink, 600);
-        tools.forEach((tool, index) =>
-          text(c, tool, 397, 200 + index * 38, 24, brand.muted),
-        );
-      } else if (page === "education") {
-        text(c, education.period, 28, 165, 25, brand.burgundy, 500);
-        wrap(c, education.degree, 28, 220, 630, 34, 45, brand.ink);
-        text(c, education.school, 28, 339, 28, brand.ink, 500);
-        text(c, "Education", 28, 389, 23, brand.muted);
-      } else {
-        learning.forEach((entry, index) => {
-          const y = 147 + index * 97;
-          text(
-            c,
-            `${entry.type} · ${entry.period}`,
-            28,
-            y,
-            20,
-            brand.burgundy,
-            500,
-          );
-          wrap(c, entry.title, 28, y + 30, 650, 23, 28, brand.ink);
-        });
-      }
-      rule(c, 24, 436, 672);
-      brandButton(
+      control(
         c,
         actions,
-        "Contact on my phone →",
-        [24, 448, 672, 38],
+        ui,
+        "Open contact phone",
+        [25, 397, 128, 33],
         onContact,
-        { filled: true, font: 23 },
+        { icon: "mail", text: "Contact", fill: os.burgundy, font: 17 },
       );
+      const titles = {
+        about: "About me",
+        skills: "Skills & tools",
+        education: "Education",
+        learning: "Learning",
+      };
+      text(c, titles[page], 185, 73, 24, os.ink, 600);
+      if (active)
+        control(c, actions, ui, "Close profile", [659, 47, 32, 31], onClose, {
+          icon: "close",
+        });
+      rect(c, 180, 91, 510, 1, os.line);
+      if (page === "about") {
+        rect(c, 184, 111, 178, 274, "#ded6d1", 7);
+        if (portrait) {
+          c.save();
+          c.beginPath();
+          c.roundRect(184, 111, 178, 274, 7);
+          c.clip();
+          containedImage(c, portrait, 184, 111, 178, 274);
+          c.restore();
+        }
+        text(c, "Leila Rose", 383, 144, 32, os.ink, 600);
+        text(c, "Parungo", 383, 181, 32, os.ink, 600);
+        text(c, "Design, sound & interactive.", 384, 211, 17, os.muted);
+        wrap(c, profile.bio, 383, 245, 305, 17, 23, os.ink);
+        text(c, profile.location, 184, 418, 18, os.muted);
+      } else if (page === "skills") {
+        text(c, "Creative skills", 185, 125, 17, os.muted, 600);
+        text(c, "Toolkit", 464, 125, 17, os.muted, 600);
+        skills.forEach((skill, i) => {
+          const y = 143 + i * 43;
+          rect(c, 182, y, 257, 40, "#eee9e5", 5);
+          text(c, skill, 194, y + 26, 18, os.ink, 500);
+        });
+        tools.forEach((tool, i) => {
+          const y = 143 + i * 43;
+          rect(c, 460, y, 230, 40, "#eee9e5", 5);
+          text(c, tool, 472, y + 26, 18, os.ink, 500);
+        });
+      } else if (page === "education") {
+        icon(c, "school", 190, 117, 36, os.burgundy);
+        text(c, education.period, 243, 143, 19, os.burgundy, 600);
+        wrap(c, education.degree, 186, 202, 488, 31, 39, os.ink);
+        rect(c, 184, 291, 506, 1, os.line);
+        text(c, "University", 187, 324, 16, os.muted);
+        text(c, education.school, 187, 356, 23, os.ink, 500);
+        text(c, "Degree program", 187, 405, 17, os.muted);
+      } else {
+        learning.forEach((entry, i) => {
+          const y = 119 + i * 103;
+          text(c, entry.type, 186, y, 15, os.burgundy, 600);
+          text(c, entry.period, 648, y, 15, os.muted);
+          wrap(c, entry.title, 186, y + 30, 490, 20, 26, os.ink);
+          if (i < learning.length - 1) rect(c, 184, y + 82, 506, 1, os.line);
+        });
+      }
+      // The tablet's application dock mirrors the desktop's real destinations.
+      rect(c, 231, 456, 258, 32, "#251b20", 8);
+      (
+        [
+          ["Work", "folder", "work"],
+          ["Profile", "person", "about"],
+          ["Music", "music", "music"],
+          ["Contact", "mail", "contact"],
+        ] as const
+      ).forEach(([label, glyph, section], i) => {
+        control(
+          c,
+          actions,
+          ui,
+          `Open ${label}`,
+          [236 + i * 63, 457, 57, 30],
+          () => (section === "about" ? setPage("about") : onNavigate(section)),
+          { icon: glyph, dark: true, selected: section === "about" },
+        );
+      });
+      rect(c, 310, 494, 100, 3, "#e6dadd", 2);
     },
-    [portrait, logo, page, active, onClose, onContact],
+    [portrait, logo, page, active, onClose, onContact, onNavigate],
   );
-  const surface = useObjectSurface(720, 500, active, draw, page);
+  const surface = useObjectSurface(720, 500, active, draw, page, {
+    enabled: true,
+    fps: 1,
+  });
   return (
     <group
       position={[1.23, 1.49, -0.04]}

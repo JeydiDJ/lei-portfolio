@@ -71,11 +71,13 @@ export default function Room({
       <group position={[0, 0, deskLayout.offsetZ]}>
         <Desk />
         <Workstation
+          onNavigate={onSelect}
           onOpen={() => onSelect("work")}
           active={activeSection === "work"}
           onClose={onClose}
         />
         <Tablet
+          onNavigate={onSelect}
           onContact={() => onSelect("contact")}
           active={activeSection === "about"}
           onOpen={() => onSelect("about")}

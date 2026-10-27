@@ -20,6 +20,24 @@ export default function useRoomMusic() {
   const [loading, setLoading] = useState(false);
   const [volume, setVolume] = useState(0.25);
   const [error, setError] = useState("");
+  const [repeat, setRepeat] = useState(true);
+  const [revision, setRevision] = useState(0);
+  const getPlayback = useCallback(() => {
+    const duration = buffer.current?.duration ?? 0;
+    const position =
+      offset.current +
+      (source.current && context.current
+        ? context.current.currentTime - startedAt.current
+        : 0);
+    return {
+      duration,
+      position: duration
+        ? source.current?.loop
+          ? position % duration
+          : Math.min(position, duration)
+        : 0,
+    };
+  }, []);
   const getEnergy = useCallback(() => {
     if (!analyser.current) return 0;
     analyser.current.getByteTimeDomainData(samples.current);
@@ -78,7 +96,7 @@ export default function useRoomMusic() {
       channel.current?.postMessage("claim-playback");
       const next = audio.createBufferSource();
       next.buffer = decoded;
-      next.loop = true;
+      next.loop = repeat;
       const level = audio.createGain();
       level.gain.setValueAtTime(0, audio.currentTime);
       level.gain.linearRampToValueAtTime(volume, audio.currentTime + 0.25);
@@ -93,6 +111,7 @@ export default function useRoomMusic() {
         next.disconnect();
         level.disconnect();
         if (source.current === next) {
+          offset.current = 0;
           source.current = null;
           gain.current = null;
           busy.current = false;
@@ -115,6 +134,9 @@ export default function useRoomMusic() {
   };
   const stopCurrent = useRef(stop);
   stopCurrent.current = stop;
+  useEffect(() => {
+    if (source.current) source.current.loop = repeat;
+  }, [repeat]);
   useEffect(() => {
     if (typeof BroadcastChannel === "undefined") return;
     const playback = new BroadcastChannel("leila-portfolio-speaker");
@@ -154,6 +176,22 @@ export default function useRoomMusic() {
     loading,
     track: 0,
     volume,
+    repeat,
+    revision,
+    getPlayback,
+    seek: (seconds: number) => {
+      if (!buffer.current) return;
+      const resume = Boolean(source.current);
+      stop();
+      offset.current = Math.max(
+        0,
+        Math.min(seconds, buffer.current.duration - 0.01),
+      );
+      setRevision((value) => value + 1);
+      if (resume) void play();
+    },
+    setVolume: (value: number) => setVolume(Math.max(0, Math.min(1, value))),
+    toggleRepeat: () => setRepeat((value) => !value),
     getEnergy,
     error,
     toggle: () => {

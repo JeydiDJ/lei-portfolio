@@ -136,7 +136,11 @@ const tetraFaces = [
 ];
 
 /** Occasional idle gestures; geometry stays batched within the moving body/head pivots. */
-export default memo(function DuckDisplay() {
+export default memo(function DuckDisplay({
+  staticPose = false,
+}: {
+  staticPose?: boolean;
+}) {
   const body = useRef<Group>(null);
   const head = useRef<Group>(null);
   const applyCurse = useCursedDuck(body, head);
@@ -158,6 +162,7 @@ export default memo(function DuckDisplay() {
     return () => preference.removeEventListener("change", update);
   }, []);
   useFrame(() => {
+    if (staticPose) return;
     if (!body.current || !head.current) return;
     const state = motion.current;
     const now = performance.now();

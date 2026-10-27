@@ -142,15 +142,15 @@ export default function RoomCamera({
       const [x, y, z] = musicPlayerLayout.position;
       const directionX = Math.sin(musicPlayerLayout.yaw);
       const directionZ = Math.cos(musicPlayerLayout.yaw);
-      const distance = fit(0.53, 0.76);
+      const distance = fit(0.43, 0.3);
       target.current.set(
         x + directionX * 0.16,
-        y,
+        y + 0.16,
         z + deskLayout.offsetZ + directionZ * 0.16,
       );
       destination.current.set(
         target.current.x + directionX * distance,
-        target.current.y + 0.025,
+        target.current.y + 0.008,
         target.current.z + directionZ * distance,
       );
     } else if (section === "experience") {

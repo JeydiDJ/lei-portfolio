@@ -8,6 +8,7 @@ import useWorkScreen from "../interfaces/useWorkScreen";
 import { Outlines } from "@react-three/drei";
 import ScreenGlow from "../ScreenGlow";
 import GlassPane from "../GlassPane";
+import type { Section } from "../../data/portfolio";
 
 function curvedPanel(width: number, height: number, depth: number) {
   const positions: number[] = [],
@@ -71,10 +72,12 @@ export default function Monitor({
   onOpen,
   onClose,
   active,
+  onNavigate,
 }: {
   onOpen: () => void;
   onClose: () => void;
   active: boolean;
+  onNavigate: (section: Section) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const shell = useMemo(
@@ -90,7 +93,7 @@ export default function Monitor({
     () => curvedPanel(dimensions.width, dimensions.height, 0),
     [],
   );
-  const surface = useWorkScreen(active, onClose);
+  const surface = useWorkScreen(active, onClose, onNavigate);
   const texture = surface.texture;
   useEffect(
     () => () => {

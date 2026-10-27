@@ -1,36 +1,39 @@
-import { useCallback, useState } from "react";
-import { useThree } from "@react-three/fiber";
+import { useCallback, useRef, useState } from "react";
 import useMonitorIdle from "./useMonitorIdle";
-import { categories, projects, type Category } from "../../data/portfolio";
+import {
+  categories,
+  projects,
+  type Category,
+  type Section,
+} from "../../data/portfolio";
 import {
   useObjectSurface,
   useSurfaceImage,
   type SurfaceDraw,
 } from "./useObjectSurface";
 import { containedImage, rect, text, wrap } from "./drawing";
-import {
-  brand,
-  brandButton,
-  brandMark,
-  emptyPreview,
-  rule,
-} from "./brandDrawing";
+import { control, icon, os, osTime } from "./osDrawing";
 
-export default function useWorkScreen(active: boolean, onClose: () => void) {
+export default function useWorkScreen(
+  active: boolean,
+  onClose: () => void,
+  onNavigate: (section: Section) => void,
+) {
   const { sleeping, wake } = useMonitorIdle(active);
+  const wokeAt = useRef(-Infinity);
   const logo = useSurfaceImage("/images/leila-logo.png");
-  const mobile = useThree((state) => state.size.width < 700);
   const [category, setCategory] = useState<Category>("All work");
   const [selected, setSelected] = useState<string | null>(null);
   const [media, setMedia] = useState(0);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const project = projects.find((item) => item.id === selected);
   const image = useSurfaceImage(project?.images?.[media] ?? "");
-  const daxPreview = useSurfaceImage(projects[0].images?.[0] ?? "");
-  const nathanielsPreview = useSurfaceImage(projects[1].images?.[0] ?? "");
-  const gamePreview = useSurfaceImage(projects[2].images?.[0] ?? "");
-  const beddingPreview = useSurfaceImage(projects[3].images?.[0] ?? "");
+  const first = useSurfaceImage(projects[0].images?.[0] ?? ""),
+    second = useSurfaceImage(projects[1].images?.[0] ?? "");
+  const third = useSurfaceImage(projects[2].images?.[0] ?? ""),
+    fourth = useSurfaceImage(projects[3].images?.[0] ?? "");
   const draw = useCallback<SurfaceDraw>(
-    (c, actions) => {
+    (c, actions, ui) => {
       if (sleeping) {
         rect(c, 0, 0, 1024, 576, "#000000");
         if (logo) containedImage(c, logo, 302, 118, 420, 340);
@@ -41,177 +44,271 @@ export default function useWorkScreen(active: boolean, onClose: () => void) {
         });
         return;
       }
-      rect(c, 0, 0, 1024, 576, brand.paper);
-      brandMark(c, logo, 24, 17, 58);
-      text(c, "Leila Parungo", 98, 44, 26, brand.ink, 600);
-      text(c, "Design / Motion / Interactive", 98, 70, 18, brand.muted);
+      rect(c, 0, 0, 1024, 576, "#302026");
+      rect(c, 0, 0, 1024, 28, "#1b1519");
+      if (logo) containedImage(c, logo, 15, 5, 18, 18);
+      text(c, "Lei OS", 44, 20, 16, "#f2ecee", 600);
+      text(c, "Files", 119, 20, 16, "#f2ecee", 600);
+      text(c, osTime(), 875, 20, 15, "#d0c3c8");
+      // One native-style file window, framed by the desktop and its application dock.
+      rect(c, 22, 43, 980, 474, os.paper, 9);
+      rect(c, 22, 43, 980, 38, "#e8e2df", 9);
+      rect(c, 22, 70, 980, 11, "#e8e2df");
       if (active)
-        brandButton(c, actions, "← Room", [850, 24, 146, 44], onClose);
-      rule(c, 28, 92, 968);
-
+        control(
+          c,
+          actions,
+          ui,
+          "Close work window",
+          [32, 48, 28, 27],
+          onClose,
+          { icon: "close" },
+        );
+      text(
+        c,
+        project ? "Portfolio — Preview" : "Portfolio — Files",
+        402,
+        68,
+        19,
+        os.ink,
+        600,
+      );
+      rect(c, 22, 81, 980, 36, "#f0ece8");
+      if (project)
+        control(
+          c,
+          actions,
+          ui,
+          "Back to all work",
+          [203, 84, 32, 30],
+          () => setSelected(null),
+          { icon: "back" },
+        );
+      else icon(c, "folder", 208, 89, 21, os.muted);
+      text(
+        c,
+        project ? `Work / ${project.category}` : "Work / Selected projects",
+        243,
+        106,
+        17,
+        os.muted,
+      );
       if (!project) {
-        text(c, "Work", 30, 156, 40, brand.ink, 600);
-        text(c, "Browse by discipline", 30, 189, 17, brand.muted);
-        categories.forEach((item, i) => {
-          const y = 218 + i * 51;
-          if (item === category) {
-            rect(c, 28, y, 196, 43, "#e1d2ce", 2);
-            rect(c, 28, y, 3, 43, brand.burgundy);
-          }
-          text(
-            c,
-            item,
-            42,
-            y + 29,
-            mobile ? 25 : 23,
-            item === category ? brand.burgundy : brand.muted,
-            item === category ? 600 : 400,
-          );
-          actions.push({
-            label: `Show ${item}`,
-            rect: [28, y, 196, 43],
-            run: () => setCategory(item),
-          });
-        });
+        control(
+          c,
+          actions,
+          ui,
+          "Grid view",
+          [902, 84, 36, 30],
+          () => setView("grid"),
+          { icon: "grid", selected: view === "grid" },
+        );
+        control(
+          c,
+          actions,
+          ui,
+          "List view",
+          [945, 84, 36, 30],
+          () => setView("list"),
+          { icon: "list", selected: view === "list" },
+        );
+      }
+      rect(c, 22, 117, 174, 377, "#eae4e1");
+      text(c, "Library", 39, 147, 16, os.muted, 600);
+      categories.forEach((item, i) =>
+        control(
+          c,
+          actions,
+          ui,
+          `Show ${item}`,
+          [31, 160 + i * 43, 155, 37],
+          () => {
+            setCategory(item);
+            setSelected(null);
+          },
+          {
+            icon:
+              item === "All work"
+                ? "grid"
+                : item === "Games"
+                  ? "spark"
+                  : "folder",
+            text: item,
+            selected: item === category,
+            font: 18,
+          },
+        ),
+      );
+      text(c, "Leila's portfolio", 39, 470, 15, os.muted);
+      const previews = [first, second, third, fourth];
+      if (!project) {
         const visible = projects.filter(
           (item) => category === "All work" || item.category === category,
         );
         text(
           c,
           category === "All work" ? "Selected work" : category,
-          266,
-          149,
-          36,
-          brand.ink,
+          218,
+          151,
+          27,
+          os.ink,
           600,
         );
-        text(
-          c,
-          `${String(visible.length).padStart(2, "0")} projects`,
-          865,
-          148,
-          20,
-          brand.muted,
-        );
-        const previews = [
-          daxPreview,
-          nathanielsPreview,
-          gamePreview,
-          beddingPreview,
-        ];
-        const rowHeight = Math.min(113, 352 / Math.max(1, visible.length));
-        const compact = rowHeight < 100;
+        text(c, `${visible.length} projects`, 881, 149, 16, os.muted);
         visible.forEach((item, i) => {
-          const y = 180 + i * rowHeight;
-          rule(c, 266, y, 730);
-          const preview = previews[projects.indexOf(item)];
-          const previewHeight = rowHeight - 26;
-          rect(c, 266, y + 13, 92, previewHeight, "#e1d9d4");
-          if (preview)
-            containedImage(c, preview, 266, y + 13, 92, previewHeight);
-          text(
-            c,
-            item.title,
-            382,
-            y + (compact ? 34 : 43),
-            compact ? 27 : 30,
-            brand.ink,
-            500,
-          );
-          text(c, item.type, 383, y + (compact ? 63 : 77), 19, brand.muted);
-          text(c, "View →", 907, y + rowHeight / 2, 22, brand.burgundy, 500);
-          actions.push({
-            label: `Open ${item.title}`,
-            rect: [266, y, 730, rowHeight],
-            run: () => {
-              setSelected(item.id);
-              setMedia(0);
-            },
-          });
+          const label = `Open ${item.title}`,
+            preview = previews[projects.indexOf(item)];
+          const open = () => {
+            setSelected(item.id);
+            setMedia(0);
+          };
+          if (view === "grid") {
+            const x = 210 + i * 194,
+              y = 168;
+            rect(c, x, y, 184, 313, "#f6f3f0", 6);
+            c.save();
+            c.globalAlpha = ui.hover(label) * 0.75;
+            rect(c, x, y, 184, 313, "#e7dcd9", 6);
+            c.restore();
+            rect(c, x + 8, y + 7, 168, 205, "#e4ddda", 4);
+            if (preview) containedImage(c, preview, x + 8, y + 7, 168, 205);
+            wrap(c, item.title, x + 11, y + 237, 162, 19, 24, os.ink);
+            text(
+              c,
+              `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
+              x + 11,
+              y + 306,
+              14,
+              os.muted,
+            );
+            actions.push({ label, rect: [x, y, 184, 313], run: open });
+          } else {
+            const y = 171 + i * 76;
+            c.save();
+            c.globalAlpha = ui.hover(label);
+            rect(c, 210, y, 776, 72, "#eae0dc", 4);
+            c.restore();
+            if (preview) containedImage(c, preview, 219, y + 8, 65, 54);
+            text(c, item.title, 302, y + 29, 23, os.ink, 500);
+            text(c, item.type, 302, y + 54, 16, os.muted);
+            text(
+              c,
+              `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
+              873,
+              y + 40,
+              16,
+              os.muted,
+            );
+            rect(c, 217, y + 73, 763, 1, os.line);
+            actions.push({ label, rect: [210, y, 776, 73], run: open });
+          }
         });
         if (!visible.length) {
-          rule(c, 266, 180, 730);
-          text(c, "New work is on its way.", 266, 255, 30, brand.ink, 500);
+          icon(c, "folder", 547, 241, 53, os.muted);
+          text(c, "No projects here yet", 457, 329, 25, os.ink, 500);
           text(
             c,
-            "Projects in this discipline will be added here.",
-            266,
-            295,
-            23,
-            brand.muted,
+            "New work will appear in this folder.",
+            420,
+            363,
+            19,
+            os.muted,
           );
         }
-        rule(c, 28, 541, 968);
-        text(
-          c,
-          "Advertising · Animation · Games · Overlays",
-          28,
-          565,
-          18,
-          brand.muted,
-        );
+        rect(c, 196, 494, 806, 23, "#e9e4e0");
+        text(c, `${visible.length} items`, 216, 510, 14, os.muted);
       } else {
-        brandButton(
-          c,
-          actions,
-          "← All work",
-          [28, 111, 166, 43],
-          () => setSelected(null),
-          { font: 22 },
-        );
-        text(c, project.title, 225, 144, 34, brand.ink, 600);
-        rect(c, 28, 177, 582, 311, "#ded6d1");
-        if (image) containedImage(c, image, 28, 177, 582, 311);
-        else emptyPreview(c, 28, 177, 582, 311);
-        text(c, project.category, 642, 202, 24, brand.burgundy, 600);
-        wrap(c, project.type, 642, 241, 350, 22, 29, brand.muted);
-        wrap(c, project.description, 642, 317, 350, 23, 31, brand.ink);
+        text(c, project.title, 218, 151, 27, os.ink, 600);
+        rect(c, 216, 169, 478, 291, "#e4ddda", 4);
+        if (image) containedImage(c, image, 216, 169, 478, 291);
+        else text(c, "Loading artwork…", 363, 321, 20, os.muted);
+        text(c, "Project details", 721, 192, 20, os.ink, 600);
+        text(c, project.category, 721, 225, 18, os.burgundy, 600);
+        wrap(c, project.type, 721, 257, 259, 17, 23, os.muted);
+        wrap(c, project.description, 721, 321, 259, 18, 25, os.ink);
         const count = project.images?.length ?? 0;
         if (count > 1) {
-          brandButton(c, actions, "‹ Previous", [28, 510, 168, 44], () =>
-            setMedia((media - 1 + count) % count),
-          );
-          text(
+          control(
             c,
-            `${String(media + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`,
-            273,
-            539,
-            22,
-            brand.muted,
+            actions,
+            ui,
+            "Previous image",
+            [216, 467, 101, 29],
+            () => setMedia((media - 1 + count) % count),
+            { icon: "back", text: "Prev", font: 16 },
           );
-          brandButton(c, actions, "Next ›", [442, 510, 168, 44], () =>
-            setMedia((media + 1) % count),
+          text(c, `${media + 1} of ${count}`, 416, 488, 17, os.muted);
+          control(
+            c,
+            actions,
+            ui,
+            "Next image",
+            [593, 467, 101, 29],
+            () => setMedia((media + 1) % count),
+            { icon: "chevron", text: "Next", font: 16 },
           );
-        } else text(c, "Game artwork", 28, 540, 20, brand.muted);
-        const index = projects.indexOf(project);
-        brandButton(
+        }
+        control(
           c,
           actions,
-          "Next project →",
-          [642, 510, 354, 44],
+          ui,
+          "Next project",
+          [719, 458, 264, 33],
           () => {
-            setSelected(projects[(index + 1) % projects.length].id);
+            setSelected(
+              projects[(projects.indexOf(project) + 1) % projects.length].id,
+            );
             setMedia(0);
           },
-          { filled: true },
+          { text: "Next project →", fill: os.burgundy, font: 17 },
+        );
+        rect(c, 196, 499, 806, 18, "#e9e4e0");
+        text(
+          c,
+          `Preview · Image ${media + 1} of ${count}`,
+          216,
+          513,
+          13,
+          os.muted,
         );
       }
+      rect(c, 387, 528, 250, 40, "#1b1519", 8);
+      (
+        [
+          ["Work", "folder", "work"],
+          ["About me", "person", "about"],
+          ["Music", "music", "music"],
+          ["Contact", "mail", "contact"],
+        ] as const
+      ).forEach(([label, glyph, section], i) => {
+        control(
+          c,
+          actions,
+          ui,
+          `Open ${label}`,
+          [396 + i * 59, 532, 52, 32],
+          () => (section === "work" ? setSelected(null) : onNavigate(section)),
+          { icon: glyph, dark: true, selected: section === "work" },
+        );
+      });
     },
     [
       active,
       onClose,
-      mobile,
+      onNavigate,
       category,
       project,
-      image,
+      selected,
       media,
+      view,
       sleeping,
       logo,
       wake,
-      daxPreview,
-      nathanielsPreview,
-      gamePreview,
-      beddingPreview,
+      image,
+      first,
+      second,
+      third,
+      fourth,
     ],
   );
   const surface = useObjectSurface(
@@ -219,7 +316,10 @@ export default function useWorkScreen(active: boolean, onClose: () => void) {
     576,
     active,
     draw,
-    `${selected ?? category}:${media}:${sleeping}`,
+    `${selected ?? category}:${media}:${sleeping}:${view}`,
+    // The desktop clock displays minutes, so it needs only a minute-level refresh.
+    { enabled: !sleeping, fps: 1 / 60 },
+    2,
   );
   return {
     ...surface,
@@ -230,12 +330,14 @@ export default function useWorkScreen(active: boolean, onClose: () => void) {
       onPointerMove: (
         event: Parameters<typeof surface.events.onPointerMove>[0],
       ) => {
+        if (sleeping) wokeAt.current = performance.now();
         wake();
         surface.events.onPointerMove(event);
       },
       onClick: (event: Parameters<typeof surface.events.onClick>[0]) => {
         wake();
-        if (sleeping && active) event.stopPropagation();
+        if (active && (sleeping || performance.now() - wokeAt.current < 200))
+          event.stopPropagation();
         else surface.events.onClick(event);
       },
     },

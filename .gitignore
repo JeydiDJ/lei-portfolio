@@ -1,5 +1,8 @@
 node_modules/
 dist/
+
+# Generated model exports and preview images
+/exports/
 *.local
 .DS_Store
 
