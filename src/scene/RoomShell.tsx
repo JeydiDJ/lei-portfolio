@@ -150,7 +150,7 @@ export default function RoomShell() {
               color="#dedbd4"
               radius={0}
               castShadow={false}
-              receiveShadow={false}
+              receiveShadow
             />
           ))}
           <Box

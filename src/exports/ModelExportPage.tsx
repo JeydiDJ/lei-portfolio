@@ -117,6 +117,7 @@ export default function ModelExportPage() {
         ) : (
           <SeasonalFeatures paused>
             <EnvironmentTransition
+              sunDirection={[-0.3, 0.7, -0.65]}
               night={0}
               twilight={0}
               roomLight={0.7}

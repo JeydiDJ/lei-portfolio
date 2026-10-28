@@ -3,6 +3,9 @@ export const adClients = [
   { id: "dax", label: "Eyewear" },
   { id: "nathaniels", label: "Food & beverage" },
   { id: "bedding", label: "Bedding" },
+  { id: "pet-fountain", label: "Pet fountain" },
+  { id: "health", label: "Health & wellness" },
+  { id: "travel-bags", label: "Travel bags" },
 ] as const;
 export type AdClient = (typeof adClients)[number]["id"];
 export type Ad = { id: string; title: string; image: string; client: AdClient };
@@ -78,6 +81,42 @@ export const adGalleries: Record<AdFormat, Ad[]> = {
     },
   ],
   square: [
+    {
+      id: "travel-bags-colour-comparison",
+      client: "travel-bags",
+      title: "Packing cube colour comparison",
+      image: "/images/ads/travel-bags-colour-comparison.png",
+    },
+    {
+      id: "travel-bags-packing-cubes",
+      client: "travel-bags",
+      title: "Packing cubes product campaign",
+      image: "/images/ads/travel-bags-packing-cubes.png",
+    },
+    {
+      id: "health-gummies-benefits",
+      client: "health",
+      title: "Gummy supplement product layout",
+      image: "/images/ads/health-gummies-benefits.png",
+    },
+    {
+      id: "health-gummies-comparison",
+      client: "health",
+      title: "Gummies & capsules comparison",
+      image: "/images/ads/health-gummies-comparison.png",
+    },
+    {
+      id: "pet-fountain-features",
+      client: "pet-fountain",
+      title: "Water fountain features",
+      image: "/images/ads/pet-fountain-features.png",
+    },
+    {
+      id: "pet-fountain-clean-water",
+      client: "pet-fountain",
+      title: "Clean water for pets",
+      image: "/images/ads/pet-fountain-clean-water.png",
+    },
     {
       id: "bedding-gift",
       client: "bedding",

@@ -47,7 +47,7 @@ export default function BackWall() {
             color="#dedbd4"
             radius={0}
             castShadow={false}
-            receiveShadow={false}
+            receiveShadow
           />
         ));
       })}
@@ -67,7 +67,7 @@ export default function BackWall() {
             color="#dedbd4"
             radius={0}
             castShadow={false}
-            receiveShadow={false}
+            receiveShadow
           />
         ));
       })}

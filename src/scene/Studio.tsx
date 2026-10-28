@@ -102,6 +102,7 @@ export default function Studio({
   onSelect,
   night,
   twilight,
+  sunDirection,
   roomLight,
   resetKey,
   activeSection,
@@ -114,6 +115,7 @@ export default function Studio({
   onSelect: (section: Section) => void;
   night: number;
   twilight: number;
+  sunDirection: [number, number, number];
   roomLight: number;
   resetKey: number;
   activeSection: Section | null;
@@ -137,6 +139,7 @@ export default function Studio({
           <EnvironmentTransition
             night={night}
             twilight={twilight}
+            sunDirection={sunDirection}
             roomLight={roomLight}
             blindsDown={blindsDown}
           >

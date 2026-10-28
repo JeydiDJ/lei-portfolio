@@ -126,6 +126,45 @@ export const projects: Project[] = [
       .filter((ad) => ad.client === "bedding")
       .map((ad) => ad.image),
   },
+  {
+    id: "pet-fountain",
+    title: "Pet fountain campaign",
+    category: "Advertising",
+    type: "Freelance client · Advertising design",
+    color: "#781b20",
+    graphic: "pet-fountain",
+    description:
+      "Square-format advertising designs for a freelance pet fountain client, featuring product benefits and pet-focused promotional layouts.",
+    images: adGalleries.square
+      .filter((ad) => ad.client === "pet-fountain")
+      .map((ad) => ad.image),
+  },
+  {
+    id: "health",
+    title: "Health & wellness campaign",
+    category: "Advertising",
+    type: "Freelance client · Advertising design",
+    color: "#781b20",
+    graphic: "health",
+    description:
+      "Square-format advertising designs for a freelance health and wellness client, including a supplement product layout and a gummies-versus-capsules comparison.",
+    images: adGalleries.square
+      .filter((ad) => ad.client === "health")
+      .map((ad) => ad.image),
+  },
+  {
+    id: "travel-bags",
+    title: "Travel bags campaign",
+    category: "Advertising",
+    type: "Freelance client · Advertising design",
+    color: "#781b20",
+    graphic: "travel-bags",
+    description:
+      "Square-format advertising designs for a freelance travel bag client, featuring packing cube colour options and a product-focused campaign layout.",
+    images: adGalleries.square
+      .filter((ad) => ad.client === "travel-bags")
+      .map((ad) => ad.image),
+  },
 ];
 // Public industry labels respect the client's preference to omit employer names.
 // Dates follow the seven role/date pairs in the supplied résumé.

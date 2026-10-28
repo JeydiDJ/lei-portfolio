@@ -162,7 +162,12 @@ function CityParts({
     mesh.current.computeBoundingSphere();
   }, [parts]);
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, parts.length]}>
+    <instancedMesh
+      ref={mesh}
+      args={[undefined, undefined, parts.length]}
+      castShadow
+      receiveShadow
+    >
       {antenna ? (
         <cylinderGeometry args={[0.025, 0.035, 1.9, 6]} />
       ) : (

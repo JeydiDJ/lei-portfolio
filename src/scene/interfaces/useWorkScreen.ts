@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useMonitorIdle from "./useMonitorIdle";
 import {
   categories,
@@ -26,12 +26,52 @@ export default function useWorkScreen(
   const [selected, setSelected] = useState<string | null>(null);
   const [media, setMedia] = useState(0);
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [page, setPage] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
+  const visibleProjects = useMemo(
+    () =>
+      projects.filter(
+        (item) => category === "All work" || item.category === category,
+      ),
+    [category],
+  );
+  const previewOffset =
+    Math.min(page, Math.max(0, Math.ceil(visibleProjects.length / 4) - 1)) * 4;
   const project = projects.find((item) => item.id === selected);
   const image = useSurfaceImage(project?.images?.[media] ?? "");
-  const first = useSurfaceImage(projects[0].images?.[0] ?? ""),
-    second = useSurfaceImage(projects[1].images?.[0] ?? "");
-  const third = useSurfaceImage(projects[2].images?.[0] ?? ""),
-    fourth = useSurfaceImage(projects[3].images?.[0] ?? "");
+  useEffect(() => {
+    if (!active) setFullscreen(false);
+    if (!active || !fullscreen || !project) return;
+    const handle = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        setFullscreen(false);
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        const count = project.images?.length ?? 0;
+        if (count > 1)
+          setMedia(
+            (value) =>
+              (value + (event.key === "ArrowRight" ? 1 : -1) + count) % count,
+          );
+      }
+    };
+    window.addEventListener("keydown", handle, true);
+    return () => window.removeEventListener("keydown", handle, true);
+  }, [active, fullscreen, project]);
+  const first = useSurfaceImage(
+      visibleProjects[previewOffset]?.images?.[0] ?? "",
+    ),
+    second = useSurfaceImage(
+      visibleProjects[previewOffset + 1]?.images?.[0] ?? "",
+    );
+  const third = useSurfaceImage(
+      visibleProjects[previewOffset + 2]?.images?.[0] ?? "",
+    ),
+    fourth = useSurfaceImage(
+      visibleProjects[previewOffset + 3]?.images?.[0] ?? "",
+    );
   const draw = useCallback<SurfaceDraw>(
     (c, actions, ui) => {
       if (sleeping) {
@@ -42,6 +82,53 @@ export default function useWorkScreen(
           rect: [0, 0, 1024, 576],
           run: wake,
         });
+        return;
+      }
+      if (fullscreen && project) {
+        rect(c, 0, 0, 1024, 576, "#151216");
+        rect(c, 0, 0, 1024, 48, "#211a20");
+        text(c, project.title, 20, 31, 21, "#f6f0f1", 500);
+        control(
+          c,
+          actions,
+          ui,
+          "Exit full screen",
+          [838, 6, 174, 36],
+          () => setFullscreen(false),
+          { text: "Exit full screen", icon: "close", dark: true, font: 17 },
+        );
+        if (image) containedImage(c, image, 48, 56, 928, 464);
+        else text(c, "Loading artwork…", 421, 291, 20, "#e9e1e5");
+        const count = project.images?.length ?? 0;
+        if (count > 1) {
+          control(
+            c,
+            actions,
+            ui,
+            "Previous image",
+            [4, 247, 40, 70],
+            () => setMedia((media - 1 + count) % count),
+            { icon: "back", dark: true, iconSize: 25 },
+          );
+          control(
+            c,
+            actions,
+            ui,
+            "Next image",
+            [980, 247, 40, 70],
+            () => setMedia((media + 1) % count),
+            { icon: "chevron", dark: true, iconSize: 25 },
+          );
+        }
+        text(c, `${media + 1} / ${count}`, 487, 554, 18, "#e9e1e5");
+        text(
+          c,
+          "← → Browse images · Esc to exit full screen",
+          20,
+          554,
+          15,
+          "#b6a8af",
+        );
         return;
       }
       rect(c, 0, 0, 1024, 576, "#302026");
@@ -125,6 +212,7 @@ export default function useWorkScreen(
           () => {
             setCategory(item);
             setSelected(null);
+            setPage(0);
           },
           {
             icon:
@@ -151,9 +239,7 @@ export default function useWorkScreen(
       text(c, "Leila's portfolio", 39, 470, 15, os.muted);
       const previews = [first, second, third, fourth];
       if (!project) {
-        const visible = projects.filter(
-          (item) => category === "All work" || item.category === category,
-        );
+        const visible = visibleProjects;
         text(
           c,
           category === "All work" ? "Selected work" : category,
@@ -164,54 +250,58 @@ export default function useWorkScreen(
           600,
         );
         text(c, `${visible.length} projects`, 881, 149, 16, os.muted);
-        visible.forEach((item, i) => {
-          const label = `Open ${item.title}`,
-            preview = previews[projects.indexOf(item)];
-          const open = () => {
-            setSelected(item.id);
-            setMedia(0);
-          };
-          if (view === "grid") {
-            const x = 210 + i * 194,
-              y = 168;
-            rect(c, x, y, 184, 313, "#f6f3f0", 6);
-            c.save();
-            c.globalAlpha = ui.hover(label) * 0.75;
-            rect(c, x, y, 184, 313, "#e7dcd9", 6);
-            c.restore();
-            rect(c, x + 8, y + 7, 168, 205, "#e4ddda", 4);
-            if (preview) containedImage(c, preview, x + 8, y + 7, 168, 205);
-            wrap(c, item.title, x + 11, y + 237, 162, 19, 24, os.ink);
-            text(
-              c,
-              `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
-              x + 11,
-              y + 306,
-              14,
-              os.muted,
-            );
-            actions.push({ label, rect: [x, y, 184, 313], run: open });
-          } else {
-            const y = 171 + i * 76;
-            c.save();
-            c.globalAlpha = ui.hover(label);
-            rect(c, 210, y, 776, 72, "#eae0dc", 4);
-            c.restore();
-            if (preview) containedImage(c, preview, 219, y + 8, 65, 54);
-            text(c, item.title, 302, y + 29, 23, os.ink, 500);
-            text(c, item.type, 302, y + 54, 16, os.muted);
-            text(
-              c,
-              `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
-              873,
-              y + 40,
-              16,
-              os.muted,
-            );
-            rect(c, 217, y + 73, 763, 1, os.line);
-            actions.push({ label, rect: [210, y, 776, 73], run: open });
-          }
-        });
+        const pages = Math.max(1, Math.ceil(visible.length / 4));
+        const currentPage = Math.min(page, pages - 1);
+        visible
+          .slice(currentPage * 4, currentPage * 4 + 4)
+          .forEach((item, i) => {
+            const label = `Open ${item.title}`,
+              preview = previews[i];
+            const open = () => {
+              setSelected(item.id);
+              setMedia(0);
+            };
+            if (view === "grid") {
+              const x = 210 + i * 194,
+                y = 168;
+              rect(c, x, y, 184, 313, "#f6f3f0", 6);
+              c.save();
+              c.globalAlpha = ui.hover(label) * 0.75;
+              rect(c, x, y, 184, 313, "#e7dcd9", 6);
+              c.restore();
+              rect(c, x + 8, y + 7, 168, 205, "#e4ddda", 4);
+              if (preview) containedImage(c, preview, x + 8, y + 7, 168, 205);
+              wrap(c, item.title, x + 11, y + 237, 162, 19, 24, os.ink);
+              text(
+                c,
+                `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
+                x + 11,
+                y + 306,
+                14,
+                os.muted,
+              );
+              actions.push({ label, rect: [x, y, 184, 313], run: open });
+            } else {
+              const y = 171 + i * 76;
+              c.save();
+              c.globalAlpha = ui.hover(label);
+              rect(c, 210, y, 776, 72, "#eae0dc", 4);
+              c.restore();
+              if (preview) containedImage(c, preview, 219, y + 8, 65, 54);
+              text(c, item.title, 302, y + 29, 23, os.ink, 500);
+              text(c, item.type, 302, y + 54, 16, os.muted);
+              text(
+                c,
+                `${item.images?.length ?? 0} image${item.images?.length === 1 ? "" : "s"}`,
+                873,
+                y + 40,
+                16,
+                os.muted,
+              );
+              rect(c, 217, y + 73, 763, 1, os.line);
+              actions.push({ label, rect: [210, y, 776, 73], run: open });
+            }
+          });
         if (!visible.length) {
           icon(c, "folder", 547, 241, 53, os.muted);
           text(c, "No projects here yet", 457, 329, 25, os.ink, 500);
@@ -226,11 +316,48 @@ export default function useWorkScreen(
         }
         rect(c, 196, 494, 806, 23, "#e9e4e0");
         text(c, `${visible.length} items`, 216, 510, 14, os.muted);
+        if (pages > 1) {
+          if (currentPage > 0)
+            control(
+              c,
+              actions,
+              ui,
+              "Previous projects page",
+              [748, 495, 32, 21],
+              () => setPage(currentPage - 1),
+              { icon: "back" },
+            );
+          text(c, `${currentPage + 1} / ${pages}`, 821, 510, 14, os.muted);
+          if (currentPage < pages - 1)
+            control(
+              c,
+              actions,
+              ui,
+              "Next projects page",
+              [945, 495, 32, 21],
+              () => setPage(currentPage + 1),
+              { icon: "chevron" },
+            );
+        }
       } else {
         text(c, project.title, 218, 151, 27, os.ink, 600);
+        control(
+          c,
+          actions,
+          ui,
+          "Enter full screen",
+          [840, 123, 143, 34],
+          () => setFullscreen(true),
+          { text: "Full screen", icon: "expand", font: 16 },
+        );
         rect(c, 216, 169, 478, 291, "#e4ddda", 4);
         if (image) containedImage(c, image, 216, 169, 478, 291);
         else text(c, "Loading artwork…", 363, 321, 20, os.muted);
+        actions.push({
+          label: "View artwork full screen",
+          rect: [216, 169, 478, 291],
+          run: () => setFullscreen(true),
+        });
         text(c, "Project details", 721, 192, 20, os.ink, 600);
         text(c, project.category, 721, 225, 18, os.burgundy, 600);
         wrap(c, project.type, 721, 257, 259, 17, 23, os.muted);
@@ -318,6 +445,9 @@ export default function useWorkScreen(
       second,
       third,
       fourth,
+      visibleProjects,
+      page,
+      fullscreen,
     ],
   );
   const surface = useObjectSurface(
@@ -325,7 +455,7 @@ export default function useWorkScreen(
     576,
     active,
     draw,
-    `${selected ?? category}:${media}:${sleeping}:${view}`,
+    `${selected ?? category}:${media}:${sleeping}:${view}:${page}:${fullscreen}`,
     // The desktop clock displays minutes, so it needs only a minute-level refresh.
     { enabled: !sleeping, fps: 1 / 60 },
     2,

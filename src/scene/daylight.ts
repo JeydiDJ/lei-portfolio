@@ -1,5 +1,5 @@
 /** Manila is the daylight reference for the Philippine-time studio clock.
- * Approximate solar elevation: NOAA general solar position equations.
+ * Approximate solar position: NOAA general solar position equations.
  * https://gml.noaa.gov/grad/solcalc/solareqns.PDF
  */
 export const DAYLIGHT_LOCATION = { latitude: 14.6, longitude: 120.98 };
@@ -38,17 +38,15 @@ export function philippineDaylight(now = new Date()) {
     1440;
   const hourAngle = (solarMinutes / 4 - 180) * radians;
   const latitude = DAYLIGHT_LOCATION.latitude * radians;
-  const elevation =
-    Math.asin(
-      Math.max(
-        -1,
-        Math.min(
-          1,
-          Math.sin(latitude) * Math.sin(declination) +
-            Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle),
-        ),
-      ),
-    ) / radians;
+  // Local east / up / north components avoid an azimuth singularity at noon.
+  const east = -Math.cos(declination) * Math.sin(hourAngle);
+  const north =
+    Math.cos(latitude) * Math.sin(declination) -
+    Math.sin(latitude) * Math.cos(declination) * Math.cos(hourAngle);
+  const up =
+    Math.sin(latitude) * Math.sin(declination) +
+    Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle);
+  const elevation = Math.asin(Math.max(-1, Math.min(1, up))) / radians;
   const night = 1 - smooth(-8, 6, elevation);
   const twilight = smooth(-10, -3, elevation) * (1 - smooth(4, 16, elevation));
   const phase =
@@ -59,5 +57,9 @@ export function philippineDaylight(now = new Date()) {
         : solarMinutes < 720
           ? "Sunrise"
           : "Sunset";
-  return { night, twilight, elevation, phase };
+  const azimuth = (Math.atan2(east, north) / radians + 360) % 360;
+  // The studio's window faces south (-Z); north is +Z and east is -X.
+  // This orientation stays fixed: the sun can move behind the room in summer.
+  const sunDirection: [number, number, number] = [-east, up, north];
+  return { night, twilight, elevation, azimuth, sunDirection, phase };
 }

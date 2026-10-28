@@ -24,7 +24,8 @@ export type IconName =
   | "more"
   | "home"
   | "star"
-  | "recent";
+  | "recent"
+  | "expand";
 export const os = {
   ink: "#272326",
   muted: "#80777b",
@@ -54,7 +55,28 @@ export function icon(
     if (close) c.closePath();
     fill ? c.fill() : c.stroke();
   };
-  if (name === "star") {
+  if (name === "expand") {
+    path([
+      [9, 3],
+      [3, 3],
+      [3, 9],
+    ]);
+    path([
+      [15, 3],
+      [21, 3],
+      [21, 9],
+    ]);
+    path([
+      [3, 15],
+      [3, 21],
+      [9, 21],
+    ]);
+    path([
+      [15, 21],
+      [21, 21],
+      [21, 15],
+    ]);
+  } else if (name === "star") {
     path(
       Array.from({ length: 10 }, (_, i) => {
         const angle = -Math.PI / 2 + (i * Math.PI) / 5;

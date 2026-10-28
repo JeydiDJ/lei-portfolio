@@ -134,3 +134,41 @@ test("visitor timezone cannot change the clock or daylight cycle", () => {
     else process.env.TZ = original;
   }
 });
+
+test("sun travels east to west while the studio orientation stays fixed", () => {
+  const morning = philippineDaylight(at("2026-10-28", "08:00"));
+  const noon = philippineDaylight(at("2026-10-28", "12:00"));
+  const afternoon = philippineDaylight(at("2026-10-28", "16:00"));
+  assert.ok(morning.azimuth > 0 && morning.azimuth < 180);
+  assert.ok(afternoon.azimuth > 180 && afternoon.azimuth < 360);
+  assert.ok(morning.sunDirection[0] < 0);
+  assert.ok(afternoon.sunDirection[0] > 0);
+  assert.ok(
+    noon.elevation > morning.elevation && noon.elevation > afternoon.elevation,
+  );
+});
+
+test("seasonal noon position crosses to the north in Manila's summer", () => {
+  const summer = philippineDaylight(at("2026-06-21", "12:00"));
+  const winter = philippineDaylight(at("2026-12-21", "12:00"));
+  assert.ok(summer.sunDirection[2] > 0);
+  assert.ok(winter.sunDirection[2] < 0);
+  assert.ok(summer.elevation > winter.elevation);
+});
+
+test("solar vectors remain normalized, continuous and agree with elevation", () => {
+  const start = at("2026-10-28", "00:00").getTime();
+  let previous = philippineDaylight(new Date(start)).sunDirection;
+  for (let minute = 0; minute <= 1440; minute++) {
+    const cycle = philippineDaylight(new Date(start + minute * 60_000));
+    const direction = cycle.sunDirection;
+    assert.ok(Math.abs(Math.hypot(...direction) - 1) < 1e-10);
+    assert.ok(
+      Math.abs(direction[1] - Math.sin((cycle.elevation * Math.PI) / 180)) <
+        1e-10,
+    );
+    assert.ok(Math.hypot(...direction.map((v, i) => v - previous[i])) < 0.005);
+    previous = direction;
+  }
+  assert.ok(philippineDaylight(at("2026-10-28", "00:00")).sunDirection[1] < 0);
+});

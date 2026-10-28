@@ -4,10 +4,12 @@ import {
   AmbientLight,
   Color,
   DirectionalLight,
+  Fog,
   HemisphereLight,
   Object3D,
   PointLight,
   SpotLight,
+  Vector3,
 } from "three";
 import { roomLayout } from "./layout";
 import { useEnvironmentTransition } from "./EnvironmentTransition";
@@ -32,6 +34,7 @@ export default function Lighting() {
   const { gl, size, scene } = useThree();
   const blend = useEnvironmentTransition();
   const seasonal = useSeasonalFeatures();
+  const sunPosition = useMemo(() => new Vector3(), []);
   const ambient = useRef<AmbientLight>(null),
     hemisphere = useRef<HemisphereLight>(null);
   const ceiling = useRef<SpotLight>(null),
@@ -45,7 +48,7 @@ export default function Lighting() {
   }, []);
   const sunTarget = useMemo(() => {
     const target = new Object3D();
-    target.position.set(1, 0.5, 0.5);
+    target.position.set(0, 0.5, -4);
     return target;
   }, []);
   const secondaryTarget = useMemo(() => {
@@ -87,17 +90,40 @@ export default function Lighting() {
     if (ceiling.current) ceiling.current.intensity = levels.ceiling;
     if (secondary.current) secondary.current.intensity = levels.secondary;
     if (sun.current) {
-      sun.current.intensity = levels.sun;
+      const aboveHorizon = Math.max(
+        0,
+        Math.min(1, blend.sunDirection.y / 0.14),
+      );
+      sun.current.intensity = levels.sun * aboveHorizon;
       sun.current.color.lerpColors(noonSun, warmSun, blend.twilight);
+      sunPosition
+        .copy(blend.sunDirection)
+        .multiplyScalar(55)
+        .add(sunTarget.position);
+      // Keep the visible sun and actual shadow direction in agreement. Update
+      // the cached shadow only when the slow dusk/dawn movement requires it.
+      sun.current.position.copy(sunPosition);
+      if (
+        aboveHorizon > 0 &&
+        sun.current.shadow.camera.position.distanceToSquared(sunPosition) >
+          0.0004
+      ) {
+        gl.shadowMap.needsUpdate = true;
+      }
     }
     if (windowFill.current) {
-      windowFill.current.intensity = levels.window;
+      windowFill.current.intensity =
+        levels.window * (0.3 + 0.7 * Math.max(0, -blend.sunDirection.z));
       windowFill.current.color.lerpColors(dayWindow, nightWindow, n);
     }
     if (scene.fog)
       scene.fog.color
         .lerpColors(dayFog, nightFog, n)
         .lerp(twilightFog, blend.twilight * 0.4);
+    if (scene.fog instanceof Fog) {
+      scene.fog.near = 18 + n * 10;
+      scene.fog.far = 75 + n * 20;
+    }
     if (scene.background instanceof Color)
       scene.background.lerpColors(dayBackground, nightBackground, n);
     // Fixed shadow-caster counts avoid shader recompilation during the crossfade.
@@ -145,12 +171,12 @@ export default function Lighting() {
         color="#fff1d6"
         intensity={0}
         shadow-mapSize={[shadowSize, shadowSize]}
-        shadow-camera-left={-9}
-        shadow-camera-right={9}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
+        shadow-camera-left={-13}
+        shadow-camera-right={13}
+        shadow-camera-top={18}
+        shadow-camera-bottom={-18}
         shadow-camera-near={0.5}
-        shadow-camera-far={45}
+        shadow-camera-far={100}
         shadow-normalBias={0.025}
         shadow-bias={-0.0001}
       />
