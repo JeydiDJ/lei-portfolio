@@ -23,7 +23,7 @@ const daySky = new Color("#dcecff"),
 const dayWindow = new Color("#d6eaff"),
   nightWindow = new Color("#8da5de");
 const dayFog = new Color("#b7cadc"),
-  nightFog = new Color("#17233b");
+  nightFog = new Color("#080e1b");
 const dayBackground = new Color("#68606a"),
   nightBackground = new Color("#25232e");
 const warmSun = new Color("#f2b280"),
@@ -40,6 +40,7 @@ export default function Lighting() {
   const ceiling = useRef<SpotLight>(null),
     secondary = useRef<SpotLight>(null),
     sun = useRef<DirectionalLight>(null),
+    moonlight = useRef<DirectionalLight>(null),
     windowFill = useRef<PointLight>(null);
   const ceilingTarget = useMemo(() => {
     const target = new Object3D();
@@ -116,6 +117,19 @@ export default function Lighting() {
         levels.window * (0.3 + 0.7 * Math.max(0, -blend.sunDirection.z));
       windowFill.current.color.lerpColors(dayWindow, nightWindow, n);
     }
+    if (moonlight.current) {
+      moonlight.current.position
+        .copy(blend.moonDirection)
+        .multiplyScalar(55)
+        .add(sunTarget.position);
+      moonlight.current.intensity =
+        0.07 *
+        n *
+        blend.moonIllumination *
+        Math.max(0, Math.min(1, blend.moonDirection.y / 0.12)) *
+        (1 - 0.75 * b) *
+        seasonal.lightMultiplier;
+    }
     if (scene.fog)
       scene.fog.color
         .lerpColors(dayFog, nightFog, n)
@@ -186,6 +200,12 @@ export default function Lighting() {
         intensity={0}
         distance={7}
         decay={2}
+      />
+      <directionalLight
+        ref={moonlight}
+        target={sunTarget}
+        color="#a6bce4"
+        intensity={0}
       />
     </group>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { philippineDaylight } from "./daylight";
+import { lunarSky } from "./lunarSky";
 
 // Local visual QA can compare solar shadows without changing the computer clock.
 // Production always uses the real instant, shared with the Philippine clock.
@@ -9,10 +10,12 @@ function sampleDaylight() {
       "sunPreview",
     );
     if (preview && Number.isFinite(Date.parse(preview))) {
-      return philippineDaylight(new Date(preview));
+      const now = new Date(preview);
+      return { ...philippineDaylight(now), moon: lunarSky(now) };
     }
   }
-  return philippineDaylight();
+  const now = new Date();
+  return { ...philippineDaylight(now), moon: lunarSky(now) };
 }
 
 export default function usePhilippineDaylight() {

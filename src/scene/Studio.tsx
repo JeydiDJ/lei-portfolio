@@ -15,6 +15,7 @@ import RoomCamera from "./RoomCamera";
 import PerformanceBudget from "./PerformanceBudget";
 import ObjectCallouts from "./ObjectCallouts";
 import Lighting from "./Lighting";
+import type { LunarSky } from "./lunarSky";
 import { EnvironmentTransition } from "./EnvironmentTransition";
 import SeasonalFeatures from "../seasonal/SeasonalFeatures";
 import HalloweenRoom from "../seasonal/halloween/HalloweenRoom";
@@ -103,6 +104,7 @@ export default function Studio({
   night,
   twilight,
   sunDirection,
+  moon,
   roomLight,
   resetKey,
   activeSection,
@@ -116,6 +118,7 @@ export default function Studio({
   night: number;
   twilight: number;
   sunDirection: [number, number, number];
+  moon: LunarSky;
   roomLight: number;
   resetKey: number;
   activeSection: Section | null;
@@ -140,6 +143,7 @@ export default function Studio({
             night={night}
             twilight={twilight}
             sunDirection={sunDirection}
+            moon={moon}
             roomLight={roomLight}
             blindsDown={blindsDown}
           >

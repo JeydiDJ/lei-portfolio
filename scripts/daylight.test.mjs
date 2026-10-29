@@ -18,6 +18,7 @@ async function loadSource(path) {
   );
 }
 const { philippineDaylight } = await loadSource("../src/scene/daylight.ts");
+const { lunarSky } = await loadSource("../src/scene/lunarSky.ts");
 const { lightingLevels, roomLightPower } = await loadSource(
   "../src/scene/lightingLevels.ts",
 );
@@ -86,6 +87,45 @@ const { philippineClockParts } = await loadSource(
   "../src/scene/workstation/clockTime.ts",
 );
 const at = (date, time) => new Date(`${date}T${time}:00+08:00`);
+
+test("lunar illumination agrees with USNO's October 2026 primary phases", () => {
+  // https://aa.usno.navy.mil/api/moon/phases/year?year=2026
+  const fresh = lunarSky(new Date("2026-10-10T15:50:00Z"));
+  const waxing = lunarSky(new Date("2026-10-18T16:12:00Z"));
+  const full = lunarSky(new Date("2026-10-26T04:12:00Z"));
+  const waning = lunarSky(new Date("2026-11-01T20:28:00Z"));
+  assert.ok(fresh.illumination < 0.01);
+  assert.ok(full.illumination > 0.99);
+  assert.ok(Math.abs(waxing.illumination - 0.5) < 0.03);
+  assert.ok(Math.abs(waning.illumination - 0.5) < 0.03);
+  assert.ok(Math.abs(waxing.phase - 0.25) < 0.02);
+  assert.ok(Math.abs(waning.phase - 0.75) < 0.02);
+});
+
+test("lunar vectors stay normalized and continuous through a full month", () => {
+  const start = Date.parse("2026-10-01T00:00:00Z");
+  let previous = lunarSky(new Date(start));
+  for (let hour = 1; hour <= 31 * 24; hour++) {
+    const current = lunarSky(new Date(start + hour * 3600000));
+    assert.ok(current.phase >= 0 && current.phase < 1);
+    assert.ok(current.illumination >= 0 && current.illumination <= 1);
+    assert.ok(Math.abs(Math.hypot(...current.direction) - 1) < 1e-10);
+    assert.ok(
+      Math.hypot(
+        ...current.direction.map((v, i) => v - previous.direction[i]),
+      ) < 0.28,
+    );
+    assert.ok(Math.abs(current.illumination - previous.illumination) < 0.015);
+    previous = current;
+  }
+});
+
+test("moon phase and position depend on the instant, not visitor timezone", () => {
+  assert.deepEqual(
+    lunarSky(new Date("2026-10-29T22:00:00+08:00")),
+    lunarSky(new Date("2026-10-29T14:00:00Z")),
+  );
+});
 
 for (const date of ["2026-03-20", "2026-06-21", "2026-12-21", "2028-02-29"]) {
   test(`Philippine noon is daylight and midnight is night on ${date}`, () => {

@@ -216,7 +216,8 @@ export default function CityBuildings({ night }: { night: number }) {
     return { facades, roofs, equipment, antennas };
   }, [city]);
   return (
-    <group>
+    // A higher apartment view leaves a strip of sky above the nearby rooftops.
+    <group position={[0, -5, 0]}>
       <mesh position={[0, -12.12, -31]} receiveShadow>
         <boxGeometry args={[150, 0.2, 110]} />
         <meshStandardMaterial color="#383641" roughness={1} />

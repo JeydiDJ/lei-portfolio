@@ -13,7 +13,7 @@ const Studio = lazy(() => import("./scene/Studio"));
 
 export default function App() {
   const [section, setSection] = useState<Section | null>(null);
-  const { night, twilight, sunDirection } = usePhilippineDaylight();
+  const { night, twilight, sunDirection, moon } = usePhilippineDaylight();
   const [blindsDown, setBlindsDown] = useState(false);
   const [roomLight, setRoomLight] = useState(45);
   const [lightControlsOpen, setLightControlsOpen] = useState(false);
@@ -70,6 +70,7 @@ export default function App() {
               night={night}
               twilight={twilight}
               sunDirection={sunDirection}
+              moon={moon}
               roomLight={roomLight / 100}
               resetKey={resetKey}
               activeSection={section}
