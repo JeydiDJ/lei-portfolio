@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import {
   CanvasTexture,
+  DefaultLoadingManager,
   LinearFilter,
   LinearMipmapLinearFilter,
   SRGBColorSpace,
@@ -303,13 +304,26 @@ export function useSurfaceImage(source: string) {
     setImage(null);
     if (!source) return;
     let live = true;
+    let pending = true;
+    DefaultLoadingManager.itemStart(source);
+    const settle = () => {
+      if (!pending) return;
+      pending = false;
+      DefaultLoadingManager.itemEnd(source);
+    };
     const next = new Image();
     next.onload = () => {
       if (live) setImage(next);
+      settle();
+    };
+    next.onerror = () => {
+      if (pending) DefaultLoadingManager.itemError(source);
+      settle();
     };
     next.src = source;
     return () => {
       live = false;
+      settle();
     };
   }, [source]);
   return image;

@@ -1,4 +1,12 @@
-import { Component, Suspense, type ReactNode } from "react";
+import {
+  Component,
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { useProgress } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Room from "./Room";
 import type { Section } from "../data/portfolio";
@@ -19,10 +27,18 @@ import type { LunarSky } from "./lunarSky";
 import { EnvironmentTransition } from "./EnvironmentTransition";
 import SeasonalFeatures from "../seasonal/SeasonalFeatures";
 import HalloweenRoom from "../seasonal/halloween/HalloweenRoom";
+import SceneReady from "./SceneReady";
 
-function SceneFallback({ onSelect }: { onSelect: (section: Section) => void }) {
+function SceneFallback({
+  onSelect,
+  onReady,
+}: {
+  onSelect: (section: Section) => void;
+  onReady?: () => void;
+}) {
   return (
     <div className="scene-fallback">
+      {onReady && <SceneReady onReady={onReady} />}
       <span>✳</span>
       <p>This little room needs WebGL.</p>
       <div className="fallback-links">
@@ -84,7 +100,11 @@ function SceneFallback({ onSelect }: { onSelect: (section: Section) => void }) {
   );
 }
 class SceneBoundary extends Component<
-  { children: ReactNode; onSelect: (section: Section) => void },
+  {
+    children: ReactNode;
+    onSelect: (section: Section) => void;
+    onReady: () => void;
+  },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -93,13 +113,19 @@ class SceneBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <SceneFallback onSelect={this.props.onSelect} />
+      <SceneFallback
+        onSelect={this.props.onSelect}
+        onReady={this.props.onReady}
+      />
     ) : (
       this.props.children
     );
   }
 }
 export default function Studio({
+  onReady,
+  onLoading,
+  introOpen,
   onSelect,
   night,
   twilight,
@@ -114,6 +140,9 @@ export default function Studio({
   experienceIndex,
   onExperience,
 }: {
+  onReady: () => void;
+  onLoading: (loading: { progress: number; errors: number }) => void;
+  introOpen: boolean;
   onSelect: (section: Section) => void;
   night: number;
   twilight: number;
@@ -128,8 +157,17 @@ export default function Studio({
   experienceIndex: number;
   onExperience: (index: number) => void;
 }) {
+  const { progress, errors, active } = useProgress();
+  const [painted, setPainted] = useState(false);
+  const markPainted = useCallback(() => setPainted(true), []);
+  useEffect(() => {
+    if (painted && !active) onReady();
+  }, [painted, active, onReady]);
+  useEffect(() => {
+    onLoading({ progress, errors: errors.length });
+  }, [progress, errors, onLoading]);
   return (
-    <SceneBoundary onSelect={onSelect}>
+    <SceneBoundary onSelect={onSelect} onReady={onReady}>
       <Canvas
         shadows
         dpr={[1, 1.75]}
@@ -138,7 +176,7 @@ export default function Studio({
         fallback={<SceneFallback onSelect={onSelect} />}
       >
         <PerformanceBudget />
-        <SeasonalFeatures paused={activeSection !== null}>
+        <SeasonalFeatures paused={introOpen || activeSection !== null}>
           <EnvironmentTransition
             night={night}
             twilight={twilight}
@@ -177,6 +215,7 @@ export default function Studio({
                 onSelect={onSelect}
               />
               <HalloweenRoom />
+              <SceneReady onReady={markPainted} />
             </Suspense>
           </EnvironmentTransition>
         </SeasonalFeatures>

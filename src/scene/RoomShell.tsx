@@ -3,6 +3,7 @@ import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 import { Box, Cylinder } from "./Objects";
 import BackWall from "./BackWall";
 import Ceiling from "./Ceiling";
+import FlutedPanels from "./FlutedPanels";
 import { roomLayout as room } from "./layout";
 
 function Floor() {
@@ -133,6 +134,7 @@ export default function RoomShell() {
     <group>
       <Floor />
       <BackWall />
+      <FlutedPanels />
       <Ceiling />
       {[room.left, room.right].map((x) => (
         <group key={x}>
@@ -142,17 +144,6 @@ export default function RoomShell() {
             color="#f4f1eb"
             radius={0}
           />
-          {[0.8, 2.35, 3.9].map((y) => (
-            <Box
-              key={y}
-              position={[x + (x === room.left ? 0.14 : -0.14), y, cz]}
-              size={[0.012, 0.014, depth - 0.25]}
-              color="#dedbd4"
-              radius={0}
-              castShadow={false}
-              receiveShadow
-            />
-          ))}
           <Box
             position={[x + (x === room.left ? 0.17 : -0.17), 0.14, cz]}
             size={[0.08, 0.22, depth]}

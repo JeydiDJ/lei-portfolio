@@ -65,60 +65,6 @@ export function Cylinder({
     </mesh>
   );
 }
-export function Plant({
-  position,
-  scale = 1,
-}: {
-  position: V3;
-  scale?: number;
-}) {
-  return (
-    <group position={position} scale={scale}>
-      <Cylinder
-        position={[0, 0.17, 0]}
-        args={[0.21, 0.15, 0.34]}
-        color="#c58b68"
-      />
-      <Cylinder
-        position={[0, 0.345, 0]}
-        args={[0.185, 0.185, 0.012]}
-        color="#635140"
-      />
-      <mesh position={[0, 0.34, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.2, 0.014, 8, 24]} />
-        <meshStandardMaterial color="#c78e6d" roughness={0.9} />
-      </mesh>
-      {Array.from({ length: 8 }, (_, i) => {
-        const a = i * 2.4;
-        return (
-          <group key={i} rotation={[0, a, 0]}>
-            <Cylinder
-              position={[0.055, 0.435 + (i % 3) * 0.045, 0]}
-              args={[0.008, 0.01, 0.25 + (i % 3) * 0.09]}
-              rotation={[0, 0, -0.28]}
-              color="#60754e"
-            />
-            <Leaf i={i} />
-          </group>
-        );
-      })}
-    </group>
-  );
-}
-function Leaf({ i }: { i: number }) {
-  return (
-    <mesh
-      position={[0.14, 0.55 + (i % 3) * 0.1, 0]}
-      rotation={[0, 0, -0.5]}
-      scale={[0.1, 0.31, 0.075]}
-      castShadow
-    >
-      <sphereGeometry args={[1, 12, 8]} />
-      <meshStandardMaterial color={i % 2 ? "#5b7752" : "#84976a"} />
-    </mesh>
-  );
-}
-
 export function Artwork({
   kind = "poster",
   position,

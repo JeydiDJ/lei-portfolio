@@ -7,11 +7,24 @@ import {
   useState,
 } from "react";
 import { Icon } from "./components/Icon";
+import IntroSplash from "./components/IntroSplash";
 import type { Section } from "./data/portfolio";
 import usePhilippineDaylight from "./scene/usePhilippineDaylight";
 const Studio = lazy(() => import("./scene/Studio"));
 
 export default function App() {
+  const [introOpen, setIntroOpen] = useState(true);
+  const [roomReady, setRoomReady] = useState(false);
+  const [loading, setLoading] = useState({ progress: 0, errors: 0 });
+  const markRoomReady = useCallback(() => setRoomReady(true), []);
+  const finishIntro = useCallback(() => {
+    setIntroOpen(false);
+    requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLButtonElement>(".room-sections button")
+        ?.focus(),
+    );
+  }, []);
   const [section, setSection] = useState<Section | null>(null);
   const { night, twilight, sunDirection, moon } = usePhilippineDaylight();
   const [blindsDown, setBlindsDown] = useState(false);
@@ -52,7 +65,11 @@ export default function App() {
 
   return (
     <div className={`app ${night > 0.5 ? "night" : ""}`}>
-      <main className="room-page" aria-label="Lei’s creative room">
+      <main
+        className="room-page"
+        aria-label="Lei’s creative room"
+        inert={introOpen}
+      >
         <div
           className="scene-container"
           role="region"
@@ -66,6 +83,9 @@ export default function App() {
             }
           >
             <Studio
+              onReady={markRoomReady}
+              onLoading={setLoading}
+              introOpen={introOpen}
               onSelect={setSection}
               night={night}
               twilight={twilight}
@@ -217,6 +237,13 @@ export default function App() {
           </div>
         </div>
       </main>
+      {introOpen && (
+        <IntroSplash
+          ready={roomReady}
+          loading={loading}
+          onComplete={finishIntro}
+        />
+      )}
       {section && (
         <button className="object-return" onClick={close}>
           ← Back to room
