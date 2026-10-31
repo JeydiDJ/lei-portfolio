@@ -71,6 +71,14 @@ button {
 .scene-container canvas {
   touch-action: none;
 }
+.room-page {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.scene-fallback {
+  user-select: text;
+  -webkit-user-select: text;
+}
 .loading-room,
 .scene-fallback {
   height: 100%;

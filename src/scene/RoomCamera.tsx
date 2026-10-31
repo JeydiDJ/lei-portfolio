@@ -28,6 +28,9 @@ export default function RoomCamera({
 }) {
   const { camera, size } = useThree();
   const mobile = size.width < 700;
+  // Ignore the ID reset that happens after Experience closes. Otherwise it can
+  // restart the camera effect midway through restoring the saved room pose.
+  const experienceFocus = section === "experience" ? experienceIndex : -1;
   const controls = useRef<OrbitControlsImpl>(null),
     moving = useRef(true);
   const destination = useRef(new Vector3()),
@@ -183,9 +186,9 @@ export default function RoomCamera({
         target.current.z + directionZ * distance,
       );
     } else if (section === "experience") {
-      const overview = experienceIndex < 0;
+      const overview = experienceFocus < 0;
       target.current.set(
-        overview ? 3.25 : 3.25 - 0.55 + experienceIndex * 0.55,
+        overview ? 3.25 : 3.25 - 0.55 + experienceFocus * 0.55,
         overview ? 2.95 : 2.83,
         -3.176,
       );
@@ -228,7 +231,7 @@ export default function RoomCamera({
     camera,
     section,
     resetKey,
-    experienceIndex,
+    experienceFocus,
     size.width,
     size.height,
     mobile,

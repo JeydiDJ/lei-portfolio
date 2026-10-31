@@ -14,17 +14,23 @@ const Studio = lazy(() => import("./scene/Studio"));
 
 export default function App() {
   const [introOpen, setIntroOpen] = useState(true);
+  const [introExiting, setIntroExiting] = useState(false);
+  const beginIntroExit = useCallback(() => setIntroExiting(true), []);
   const [roomReady, setRoomReady] = useState(false);
   const [loading, setLoading] = useState({ progress: 0, errors: 0 });
   const markRoomReady = useCallback(() => setRoomReady(true), []);
   const finishIntro = useCallback(() => {
     setIntroOpen(false);
-    requestAnimationFrame(() =>
+  }, []);
+  useEffect(() => {
+    if (!introExiting) return;
+    const frame = requestAnimationFrame(() =>
       document
         .querySelector<HTMLButtonElement>(".room-sections button")
         ?.focus(),
     );
-  }, []);
+    return () => cancelAnimationFrame(frame);
+  }, [introExiting]);
   const [section, setSection] = useState<Section | null>(null);
   const { night, twilight, sunDirection, moon } = usePhilippineDaylight();
   const [blindsDown, setBlindsDown] = useState(false);
@@ -75,7 +81,7 @@ export default function App() {
       <main
         className="room-page"
         aria-label="Lei’s creative room"
-        inert={introOpen}
+        inert={introOpen && !introExiting}
       >
         <div
           className="scene-container"
@@ -246,6 +252,7 @@ export default function App() {
       </main>
       {introOpen && (
         <IntroSplash
+          onExitStart={beginIntroExit}
           ready={roomReady}
           loading={loading}
           onComplete={finishIntro}

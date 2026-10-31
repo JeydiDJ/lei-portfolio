@@ -3,7 +3,7 @@ import { useLayoutEffect } from "react";
 import type { Section } from "../data/portfolio";
 import { Box } from "./Objects";
 import StudioPlant from "./StudioPlant";
-import DeskLamp from "./DeskLamp";
+import FloorLamp from "./FloorLamp";
 import StaticBatch from "./StaticBatch";
 import CityWindow from "./CityWindow";
 import FramedPhoto from "./FramedPhoto";
@@ -95,7 +95,6 @@ export default function Room({
           onOpen={() => onSelect("music")}
           onClose={onClose}
         />
-        <DeskLamp />
         <ContactPhone
           active={activeSection === "contact"}
           onOpen={() => onSelect("contact")}
@@ -141,6 +140,7 @@ export default function Room({
         />
       ))}
       <StudioPlant position={[3.15, 1.13, -2.7]} kind="peace-lily" />
+      <FloorLamp />
       <StudioPlant position={[-3.7, 0.02, -1.1]} kind="fig" />
       <group position={[-3.2, 0.35, 0.9]} rotation={[0, -0.25, 0]}>
         <mesh castShadow scale={[1, 0.32, 0.85]}>

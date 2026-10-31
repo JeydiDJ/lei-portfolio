@@ -87,7 +87,6 @@ function Panel({
 export default function FlutedPanels() {
   return (
     <group>
-      <Panel position={[3.85, 2.7, -3.367]} width={3.36} />
       <Panel position={[5.664, 2.7, 0.4]} width={4.0} yaw={-Math.PI / 2} />
     </group>
   );

@@ -14,16 +14,19 @@ export default function IntroSplash({
   ready,
   loading,
   onComplete,
+  onExitStart,
 }: {
   ready: boolean;
   loading: { progress: number; errors: number };
   onComplete: () => void;
+  onExitStart: () => void;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const blackout = useRef<HTMLDivElement>(null);
   const nextButton = useRef<HTMLButtonElement>(null);
   const exiting = useRef(false);
+  const [leaving, setLeaving] = useState(false);
   const [step, setStep] = useState(0);
   const { progress, errors } = loading;
   const [reduced, setReduced] = useState(false);
@@ -144,6 +147,10 @@ export default function IntroSplash({
   const enter = () => {
     if (!ready || exiting.current) return;
     exiting.current = true;
+    setLeaving(true);
+    onExitStart();
+    // Release the canvas immediately; the visual fade must not block dragging.
+    gsap.set(root.current, { pointerEvents: "none" });
     gsap.to(root.current, {
       opacity: 0,
       duration: reduced ? 0 : 0.65,
@@ -165,7 +172,8 @@ export default function IntroSplash({
       ref={root}
       className={`intro-splash intro-step-${step}`}
       role="dialog"
-      aria-modal="true"
+      aria-modal={!leaving}
+      inert={leaving}
       aria-labelledby="intro-title"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
