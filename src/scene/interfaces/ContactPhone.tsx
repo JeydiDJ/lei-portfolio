@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import usePhoneMessage from "./usePhoneMessage";
 import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, type Group } from "three";
 import { Box, Cylinder } from "../Objects";
@@ -71,8 +72,13 @@ export default function ContactPhone({
   });
   const logo = useSurfaceImage("/images/leila-logo.png");
   const portrait = useSurfaceImage(profile.idPortrait);
-  const [page, setPage] = useState<"contact" | "list" | "home" | "recent">(
-    "contact",
+  const [page, setPage] = useState<
+    "contact" | "list" | "home" | "recent" | "message"
+  >("contact");
+  const backToContact = useCallback(() => setPage("contact"), []);
+  const drawMessage = usePhoneMessage(
+    active && page === "message",
+    backToContact,
   );
   const [menu, setMenu] = useState(false);
   const [favorite, setFavorite] = useState(false);
@@ -130,7 +136,9 @@ export default function ContactPhone({
       const email = () => {
         window.location.href = `mailto:${profile.email}`;
       };
-      if (page === "home") {
+      if (page === "message") {
+        drawMessage(c, actions, ui);
+      } else if (page === "home") {
         text(
           c,
           osTime().replace(/\s*[AP]M$/i, ""),
@@ -257,7 +265,7 @@ export default function ContactPhone({
             "Message",
             "message",
             () => {
-              window.location.href = `sms:+63${profile.phone.slice(1)}`;
+              setPage("message");
             },
             "#3b76bd",
           ],
@@ -374,6 +382,7 @@ export default function ContactPhone({
         [549, 1418, 88, 57],
         () => {
           if (menu) setMenu(false);
+          else if (page === "message") setPage("contact");
           else if (page === "contact") setPage("list");
           else if (page === "home") onClose();
           else setPage("home");
@@ -424,7 +433,17 @@ export default function ContactPhone({
         );
       }
     },
-    [active, onClose, page, menu, favorite, copied, logo, portrait],
+    [
+      active,
+      onClose,
+      page,
+      menu,
+      favorite,
+      copied,
+      logo,
+      portrait,
+      drawMessage,
+    ],
   );
   const surface = useObjectSurface(720, 1480, active, draw, `${page}:${menu}`, {
     enabled: true,

@@ -35,11 +35,18 @@ export default function App() {
   const toggleBlinds = useCallback(() => setBlindsDown((value) => !value), []);
   const [resetKey, setResetKey] = useState(0);
   const close = useCallback(() => setSection(null), []);
-  const [experienceIndex, setExperienceIndex] = useState(0);
-  const openExperience = useCallback((index: number) => {
-    setExperienceIndex(index);
-    setSection("experience");
-  }, []);
+  // -1 frames the bulletin board; nonnegative values focus an individual ID.
+  const [experienceIndex, setExperienceIndex] = useState(-1);
+  useEffect(() => {
+    if (section !== "experience") setExperienceIndex(-1);
+  }, [section]);
+  const openExperience = useCallback(
+    (index: number) => {
+      setExperienceIndex(section === "experience" ? index : -1);
+      setSection("experience");
+    },
+    [section],
+  );
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -120,7 +127,7 @@ export default function App() {
             </button>
             <button
               aria-current={section === "experience" ? "page" : undefined}
-              onClick={() => setSection("experience")}
+              onClick={() => openExperience(-1)}
             >
               <span>03</span> Experience
             </button>

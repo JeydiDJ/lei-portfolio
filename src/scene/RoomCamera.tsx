@@ -48,14 +48,25 @@ export default function RoomCamera({
     const presetChanged = Boolean(prior && prior.resetKey !== resetKey);
     const viewportChanged = prior && prior.mobile !== mobile;
     if (presetChanged) roomPose.current = null;
-    // Save only when leaving free exploration, not when switching between objects.
+    // Save only a settled free-exploration position. Opening another object while
+    // the camera is still returning must not replace the room pose with a point
+    // midway through that transition.
     if (section && !prior?.section && !presetChanged) {
-      roomPose.current = {
-        position: camera.position.clone(),
-        target:
-          controls.current?.target.clone() ?? new Vector3(...monitorFocus),
-        fov: camera instanceof PerspectiveCamera ? camera.fov : 48,
-      };
+      if (!moving.current || !roomPose.current) {
+        roomPose.current = {
+          position: (moving.current
+            ? destination.current
+            : camera.position
+          ).clone(),
+          // Free exploration orbits around the PC. Mobile panning may temporarily
+          // move the controls target, but object close always restores this focus.
+          target: new Vector3(...monitorFocus),
+          fov:
+            moving.current || !(camera instanceof PerspectiveCamera)
+              ? fov.current
+              : camera.fov,
+        };
+      }
     }
     previous.current = { section, resetKey, mobile };
     // A close, wide lens keeps the portrait-screen view in front of the chair.
@@ -172,11 +183,16 @@ export default function RoomCamera({
         target.current.z + directionZ * distance,
       );
     } else if (section === "experience") {
-      target.current.set(3.25 - 0.55 + experienceIndex * 0.55, 2.83, -3.176);
+      const overview = experienceIndex < 0;
+      target.current.set(
+        overview ? 3.25 : 3.25 - 0.55 + experienceIndex * 0.55,
+        overview ? 2.95 : 2.83,
+        -3.176,
+      );
       destination.current.set(
         target.current.x,
         target.current.y,
-        target.current.z + fit(0.43, 0.59),
+        target.current.z + (overview ? fit(2.05, 1.5) : fit(0.43, 0.59)),
       );
     } else {
       const returning =

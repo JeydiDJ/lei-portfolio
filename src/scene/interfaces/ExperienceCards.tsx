@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useThree } from "@react-three/fiber";
 import SelectionOutline from "../SelectionOutline";
 import { experiences, experienceGroups, profile } from "../../data/portfolio";
 import { Box, Cylinder } from "../Objects";
@@ -18,11 +19,13 @@ export const experienceCardX = (index: number) => 3.25 - 0.55 + index * 0.55;
 function ExperienceCard({
   index,
   active,
+  selectable,
   onSelect,
   onClose,
 }: {
   index: number;
   active: boolean;
+  selectable: boolean;
   onSelect: (index: number) => void;
   onClose: () => void;
 }) {
@@ -121,10 +124,17 @@ function ExperienceCard({
           () => setRoleIndex((value) => (value + 1) % category.entries.length),
           { font: 21 },
         );
-        brandButton(c, actions, "← Back to room", [24, 660, 464, 43], onClose, {
-          filled: true,
-          font: 23,
-        });
+        brandButton(
+          c,
+          actions,
+          "← Back to board",
+          [24, 660, 464, 43],
+          () => onSelect(-1),
+          {
+            filled: true,
+            font: 23,
+          },
+        );
       } else {
         rule(c, 28, 566, 456);
         text(
@@ -153,17 +163,24 @@ function ExperienceCard({
     <group
       position={[-0.55 + index * 0.55, -0.12, 0.08]}
       onClick={(e) => {
+        if (!selectable) return;
         e.stopPropagation();
         if (!active) onSelect(index);
       }}
       onPointerOver={(e) => {
+        if (!selectable) return;
         e.stopPropagation();
         setHovered(true);
         if (!active) document.body.style.cursor = "pointer";
       }}
+      onPointerMove={(event) => {
+        if (!selectable) return;
+        event.stopPropagation();
+        // Active texture controls handle their own move events before bubbling here.
+        document.body.style.cursor = active ? "default" : "pointer";
+      }}
       onPointerOut={() => {
         setHovered(false);
-        document.body.style.cursor = "";
       }}
     >
       {/* Clip and short lanyard meet the pegboard above the badge. */}
@@ -182,7 +199,7 @@ function ExperienceCard({
       <Box size={[0.43, 0.59, 0.024]} color="#a7a9a6" radius={0.012} />
       <SelectionOutline
         size={[0.43, 0.59, 0.024]}
-        visible={hovered && !active}
+        visible={selectable && hovered && !active}
       />
       <mesh position={[0, 0, 0.014]} receiveShadow {...surface.events}>
         <planeGeometry args={[0.41, 0.576]} />
@@ -204,9 +221,67 @@ export default function ExperienceCards({
   onSelect: (index: number) => void;
   onClose: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    if (activeIndex !== -1) return;
+    const layer = document.createElement("div");
+    layer.className = "model-keyboard-actions";
+    layer.setAttribute("role", "group");
+    layer.setAttribute(
+      "aria-label",
+      "Choose an experience ID on the bulletin board",
+    );
+    for (const [index, category] of experienceGroups.entries()) {
+      const button = document.createElement("button");
+      button.textContent = `View ${category.title} ID`;
+      button.onclick = () => onSelect(index);
+      layer.appendChild(button);
+    }
+    gl.domElement.parentElement?.appendChild(layer);
+    return () => layer.remove();
+  }, [activeIndex, gl, onSelect]);
   return (
-    <group position={[3.25, 2.95, -3.27]} userData={{ dynamic: true }}>
+    <group
+      position={[3.25, 2.95, -3.27]}
+      userData={{ dynamic: true }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(-1);
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setHovered(true);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerMove={(event) => {
+        event.stopPropagation();
+        // Moving between the board's meshes can fire child pointer-out events.
+        // Reassert ownership while the ray still hits the board.
+        setHovered(true);
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={(event) => {
+        const stillOnBoard = event.intersections.some(({ object }) => {
+          for (
+            let node: typeof object | null = object;
+            node;
+            node = node.parent
+          ) {
+            if (node === event.eventObject) return true;
+          }
+          return false;
+        });
+        if (stillOnBoard) return;
+        setHovered(false);
+        document.body.style.cursor = "";
+      }}
+    >
       <Box size={[1.9, 1.32, 0.09]} color="#332925" />
+      <SelectionOutline
+        size={[1.9, 1.32, 0.09]}
+        visible={hovered && activeIndex === null}
+      />
       <BoardDecorations />
       <BoardSpotlight />
       {Array.from({ length: 9 }, (_, i) => (
@@ -227,6 +302,7 @@ export default function ExperienceCards({
           key={entry.title}
           index={index}
           active={activeIndex === index}
+          selectable={activeIndex !== null}
           onSelect={onSelect}
           onClose={onClose}
         />
