@@ -1,3 +1,4 @@
+import { activeSeason } from "./config";
 // Keep seasonal dates on the same clock as Leila's desk, regardless of visitor timezone.
 const calendar = new Intl.DateTimeFormat("en-US", {
   timeZone: "Asia/Manila",
@@ -15,7 +16,9 @@ export function seasonalWindow(now = new Date()) {
     day = Number(parts.day),
     hour = Number(parts.hour);
   // October, plus the last overnight window after Halloween itself.
-  const halloween = month === 10 || (month === 11 && day === 1 && hour < 5);
+  const halloween =
+    activeSeason === "halloween" &&
+    (month === 10 || (month === 11 && day === 1 && hour < 5));
   return { halloween, events: halloween && (hour >= 18 || hour < 5) };
 }
 

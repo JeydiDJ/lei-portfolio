@@ -4,7 +4,13 @@ import test from "node:test";
 import ts from "typescript";
 
 const { outputText } = ts.transpileModule(
-  readFileSync(new URL("../src/seasonal/calendar.ts", import.meta.url), "utf8"),
+  readFileSync(
+    new URL("../src/seasonal/calendar.ts", import.meta.url),
+    "utf8",
+  ).replace(
+    'import { activeSeason } from "./config";',
+    'const activeSeason = "halloween";',
+  ),
   {
     compilerOptions: {
       target: ts.ScriptTarget.ES2022,
@@ -87,4 +93,37 @@ test("only the corner, ceiling, chair and duck events can be scheduled", () => {
   assert.equal("window" in eventDuration, false);
   for (const event of halloweenEvents)
     assert.ok(eventDuration[event] > 0 && eventDuration[event] <= 5);
+});
+
+// Exercise the deployed calendar with its real selection, including October dates.
+test("selected Christmas season prevents all Halloween events on any date", async () => {
+  const compile = (source) =>
+    ts.transpileModule(source, {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ESNext,
+      },
+    }).outputText;
+  const url = (source) =>
+    `data:text/javascript;base64,${Buffer.from(compile(source)).toString("base64")}`;
+  const configUrl = url(
+    readFileSync(new URL("../src/seasonal/config.ts", import.meta.url), "utf8"),
+  );
+  const deployed = await import(
+    url(
+      readFileSync(
+        new URL("../src/seasonal/calendar.ts", import.meta.url),
+        "utf8",
+      ).replace('"./config"', JSON.stringify(configUrl)),
+    )
+  );
+  for (const date of [
+    "2026-10-27T23:00:00+08:00",
+    "2026-11-01T04:59:59+08:00",
+    "2026-12-25T20:00:00+08:00",
+  ])
+    assert.deepEqual(deployed.seasonalWindow(new Date(date)), {
+      halloween: false,
+      events: false,
+    });
 });

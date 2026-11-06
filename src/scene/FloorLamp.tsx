@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import {
   CylinderGeometry,
   DoubleSide,
+  MathUtils,
   MeshStandardMaterial,
   Object3D,
   SpotLight,
@@ -52,6 +53,17 @@ export default function FloorLamp() {
   }, [gl]);
   const shadeMaterial = useRef<MeshStandardMaterial>(null);
   const bulbMaterial = useRef<MeshStandardMaterial>(null);
+  const activation = useRef(environment.roomLight <= 0.4 ? 1 : 0);
+  const reducedMotion = useRef(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      reducedMotion.current = media.matches;
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const shade = useMemo(() => {
     const geometry = new CylinderGeometry(0.32, 0.44, 0.68, 96, 1, true);
     const positions = geometry.getAttribute("position");
@@ -67,11 +79,19 @@ export default function FloorLamp() {
     return geometry;
   }, []);
   useEffect(() => () => shade.dispose(), [shade]);
-  useFrame(() => {
+  useFrame((_, delta) => {
+    // A low-light accent: available from 1–40%, with a gentle on/off handoff.
+    const enabled =
+      environment.roomLight > 0 && environment.roomLight <= 0.4001 ? 1 : 0;
+    activation.current = reducedMotion.current
+      ? enabled
+      : MathUtils.damp(activation.current, enabled, 6, delta);
     const power =
-      roomLightPower(environment.roomLight) * seasonal.lightMultiplier;
+      roomLightPower(environment.roomLight) *
+      activation.current *
+      seasonal.lightMultiplier;
     if (downlight.current) downlight.current.intensity = 16 * power;
-    if (uplight.current) uplight.current.intensity = 7 * power;
+    if (uplight.current) uplight.current.intensity = 2.2 * power;
     if (shadeMaterial.current)
       shadeMaterial.current.emissiveIntensity = 0.38 * power;
     if (bulbMaterial.current)
@@ -165,7 +185,7 @@ export default function FloorLamp() {
         color="#ffd49a"
         intensity={0}
         angle={Math.atan2(0.44, 2.73 - 2.46)}
-        penumbra={0.25}
+        penumbra={0.5}
         distance={6}
         decay={2}
         castShadow
@@ -184,7 +204,7 @@ export default function FloorLamp() {
         color="#ffdbac"
         intensity={0}
         angle={Math.atan2(0.32, 3.14 - 2.73)}
-        penumbra={0.3}
+        penumbra={0.85}
         distance={4}
         decay={2}
       />

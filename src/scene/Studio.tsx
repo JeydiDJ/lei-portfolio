@@ -26,7 +26,6 @@ import Lighting from "./Lighting";
 import type { LunarSky } from "./lunarSky";
 import { EnvironmentTransition } from "./EnvironmentTransition";
 import SeasonalFeatures from "../seasonal/SeasonalFeatures";
-import HalloweenRoom from "../seasonal/halloween/HalloweenRoom";
 import SceneReady from "./SceneReady";
 
 function SceneFallback({
@@ -214,7 +213,6 @@ export default function Studio({
                 activeSection={activeSection}
                 onSelect={onSelect}
               />
-              <HalloweenRoom />
               <SceneReady onReady={markPainted} />
             </Suspense>
           </EnvironmentTransition>

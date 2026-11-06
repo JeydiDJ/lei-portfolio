@@ -4,10 +4,12 @@ export default function Cable({
   points,
   radius = 0.004,
   color = "#25262c",
+  segments = 24,
 }: {
   points: [number, number, number][];
   radius?: number;
   color?: string;
+  segments?: number;
 }) {
   const curve = useMemo(
     () => new CatmullRomCurve3(points.map((p) => new Vector3(...p))),
@@ -15,7 +17,7 @@ export default function Cable({
   );
   return (
     <mesh>
-      <tubeGeometry args={[curve, 24, radius, 6, false]} />
+      <tubeGeometry args={[curve, segments, radius, 6, false]} />
       <meshStandardMaterial color={color} roughness={0.9} />
     </mesh>
   );
