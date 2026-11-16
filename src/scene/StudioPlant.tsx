@@ -1,9 +1,11 @@
 import { useEffect, useMemo } from "react";
 import {
   BufferGeometry,
+  CanvasTexture,
   DoubleSide,
   Float32BufferAttribute,
   Quaternion,
+  SRGBColorSpace,
   Vector3,
 } from "three";
 
@@ -47,31 +49,81 @@ export default function StudioPlant({
   kind: "fig" | "peace-lily";
 }) {
   const fig = kind === "fig";
+  const leafTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 512;
+    const c = canvas.getContext("2d")!;
+    const wash = c.createLinearGradient(0, 0, 256, 0);
+    wash.addColorStop(0, "#24492a");
+    wash.addColorStop(0.48, "#547744");
+    wash.addColorStop(0.55, "#416738");
+    wash.addColorStop(1, "#23482c");
+    c.fillStyle = wash;
+    c.fillRect(0, 0, 256, 512);
+    c.strokeStyle = "rgba(176,191,116,.35)";
+    c.lineWidth = 1.3;
+    for (let i = 1; i < 11; i++)
+      for (const side of [-1, 1]) {
+        const y = 512 - i * 42;
+        c.beginPath();
+        c.moveTo(128, y);
+        c.bezierCurveTo(
+          128 + side * 40,
+          y - 12,
+          128 + side * 80,
+          y - 35,
+          128 + side * 125,
+          y - 56,
+        );
+        c.stroke();
+      }
+    c.strokeStyle = "rgba(184,197,125,.65)";
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.moveTo(128, 512);
+    c.quadraticCurveTo(125, 256, 128, 0);
+    c.stroke();
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+  }, []);
+  useEffect(() => () => leafTexture.dispose(), [leafTexture]);
   const leaf = useMemo(() => {
     const geometry = new BufferGeometry(),
       positions: number[] = [],
-      indices: number[] = [];
-    for (let row = 0; row <= 14; row++) {
-      const t = row / 14;
+      indices: number[] = [],
+      uvs: number[] = [];
+    const rows = 24,
+      columns = 8;
+    for (let row = 0; row <= rows; row++) {
+      const t = row / rows;
       const breadth =
         Math.pow(Math.sin(Math.PI * t), fig ? 0.6 : 0.85) *
         0.5 *
         (fig ? 1 + 0.13 * Math.sin(t * 18) : 1);
-      for (let side = -1; side <= 1; side++)
+      for (let col = 0; col <= columns; col++) {
+        const side = (col / columns) * 2 - 1;
         positions.push(
           side * breadth,
           t,
           Math.sin(t * Math.PI) * 0.16 -
             t * t * 0.28 -
-            Math.abs(side) * breadth * 0.15,
+            side * side * breadth * 0.24 +
+            Math.sin(t * 30) * side * side * 0.009,
         );
-      if (row < 14)
-        for (let col = 0; col < 2; col++) {
-          const i = row * 3 + col;
-          indices.push(i, i + 1, i + 3, i + 1, i + 4, i + 3);
+        uvs.push(col / columns, t);
+      }
+      if (row < rows)
+        for (let col = 0; col < columns; col++) {
+          const i = row * (columns + 1) + col,
+            next = i + columns + 1;
+          indices.push(i, i + 1, next, i + 1, next + 1, next);
         }
     }
     geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
     geometry.setIndex(indices);
     geometry.computeVertexNormals();
     return geometry;
@@ -145,8 +197,9 @@ export default function StudioPlant({
               receiveShadow
             >
               <meshStandardMaterial
-                color={i % 3 ? "#3e6142" : "#56764a"}
-                roughness={0.72}
+                map={leafTexture}
+                color={i % 3 ? "#e2e6d8" : "#b9ccac"}
+                roughness={0.84}
                 side={DoubleSide}
               />
             </mesh>
